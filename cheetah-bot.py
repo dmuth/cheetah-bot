@@ -68,9 +68,11 @@ def start(update, context):
 # Is the group ID from the message present in the allowed list?
 #
 def doesGroupIdMatch(groups, group_id):
-	for id in groups:
-		if id in str(group_id):
-			return(True)
+
+	if groups:
+		for id in groups:
+			if id in str(group_id):
+				return(True)
 	return(False)
 
 
@@ -78,9 +80,10 @@ def doesGroupIdMatch(groups, group_id):
 # Is the group name from the message present in the allowed list?
 #
 def doesGroupNameMatch(groups, group_name):
-	for name in groups:
-		if name.lower() in group_name.lower():
-			return(True)
+	if groups:
+		for name in groups:
+			if name.lower() in group_name.lower():
+				return(True)
 	return(False)
 
 
@@ -139,22 +142,83 @@ def checkForFoulLanguage(update, text, reply):
 
 
 #
-# Send a message right back to the sender
+# Check to see if a user is me
+#
+def userIsMe(user, my_id):
+
+	if user.id == my_id:
+		return(True)
+
+	return(False)
+
+
+#
+# Was this bot just added to a group?
 # 
-def echo(update, context):
+def botWasAddedToGroup(update, message, my_id):
 
-	text = "(No text, sticker/file?)"
-	if update.message.text:
-		text = update.message.text.replace("\r", " ").replace("\n", " ")
+	if message.new_chat_members:
+		for user in message.new_chat_members:
+			if userIsMe(user, my_id):
+				return(True)
 
-	logger.info(f"New Message: chat_id={update.effective_chat.id}, text={text[0:30]}...")
-	#logger.info(f"Message: {update}") # Debugging
-	#logger.info(f"Effective chat: {update.effective_chat}") # Debugging
+	return(False)
+
+
+#
+# Was this bot just removed from a group?
+#
+def botWasRemovedFromGroup(update, message, my_id):
+
+	if message.left_chat_member:
+		if userIsMe(message.left_chat_member, my_id):
+			return(True)
+
+	return(False)
+
+
+#
+# Print out a log message
+#
+def messageIsDm(update, context):
 
 	if not update.effective_chat.title:
 		logger.info("This is a DM, bailing out (for now...)")
 		text = "You must message me in an approved group."
 		context.bot.send_message(chat_id = update.effective_chat.id, text = text)
+		return(True)
+
+	return(False)
+
+
+#
+# Send a message right back to the sender
+# 
+def echo(update, context):
+
+	text = "(No text, sticker/file?)"
+	message = update.message
+	if update.message.text:
+		text = update.message.text.replace("\r", " ").replace("\n", " ")
+
+	logger.info(f"New Message: chat_id={update.effective_chat.id}, text={text[0:30]}...")
+	#logger.info(f"Update: {update}") # Debugging
+	#logger.info(f"Message: {message}") # Debugging
+	#logger.info(f"Effective chat: {update.effective_chat}") # Debugging
+
+	if botWasAddedToGroup(update, message, my_id):
+		chat_id = update.effective_chat.id
+		chat_name = update.effective_chat.title
+		logger.info(f"I was added to the chat '{chat_name}' ({chat_id})!")
+		return(None)
+
+	if botWasRemovedFromGroup(update, message, my_id):
+		chat_id = update.effective_chat.id
+		chat_name = update.effective_chat.title
+		logger.info(f"I was removed from the chat '{chat_name}' ({chat_id})")
+		return(None)
+
+	if messageIsDm(update, context):
 		return(None)
 
 	chat_id = update.effective_chat.id
