@@ -20,7 +20,11 @@ cd ..
 #
 # Run our Docker container with any arguments that were passed in
 #
-docker run -it cheetah-bot $@
+docker run -it \
+	-e "TOKEN=${TOKEN}" \
+	-e "GROUP_NAME=${GROUP_NAME}" \
+	-e "GROUP_ID=${GROUP_ID}" \
+	cheetah-bot $@
 
 echo "# Done!"
 

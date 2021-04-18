@@ -4,4 +4,6 @@
 *.swp
 *~
 
+# Don't accidentally check in credentials!
+.env
 
