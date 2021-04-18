@@ -18,6 +18,13 @@ from telegram.ext import CommandHandler, MessageHandler, Filters
 
 
 #
+# Allow listed of IDs and name (substrings) where this bot will operate.
+#
+allowed_group_ids = ""
+allowed_group_names = ""
+
+
+#
 # Set up the logger
 #
 logger = logging
@@ -31,10 +38,10 @@ logger.basicConfig(level = logger.INFO,
 #
 parser = argparse.ArgumentParser(description = "Analyze crawled text")
 parser.add_argument("token", type = str, help = "API token")
-parser.add_argument("--group_id", type = str, nargs = "+",
-	help = "Comma-delimited list of group IDs where this bot can operate.  Matching is done on a substring basis because Telegram does weird things with IDs.  Be careful!")
-parser.add_argument("--group_name", type = str, nargs = "+",
-	help = "0 or more group names which are matched on a substring basis.  Useful when unsure of the group ID (which can then be gotten by debug messages)")
+parser.add_argument("--group_ids", type = str,
+	help = "Comma-delimited list of group IDs where this bot can operate.  IDs must be an exact match.")
+parser.add_argument("--group_names", type = str,
+	help = "Comma-delimited group names which are matched on a substring basis.  Useful when unsure of the group ID (which can then be gotten by debug messages) Matching is done on a substring basis, so be careful!")
 args = parser.parse_args()
 #print(args) # Debugging
 
@@ -63,6 +70,16 @@ def errorHandler(update: object, context: CallbackContext):
 
 
 #
+# Split up our comma-delimited list of IDs, and filter out empty strings.
+#
+def getAllowedIds(group_ids):
+
+	ids = group_ids.split(",")
+	retval = [ id for id in ids if id != "" ]
+	return(retval)
+
+
+#
 # Respond to a /start command
 #
 def start(update, context):
@@ -77,7 +94,7 @@ def doesGroupIdMatch(groups, group_id):
 
 	if groups:
 		for id in groups:
-			if id in str(group_id):
+			if id == str(group_id):
 				return(True)
 	return(False)
 
@@ -96,13 +113,13 @@ def doesGroupNameMatch(groups, group_name):
 def doesGroupMatch(group_ids, group_names, chat_id, chat_name):
 
 	if not doesGroupIdMatch(group_ids, chat_id):
-		logger.info(f"Chat id {chat_id} not found in allowlist, trying chat title...")
+		logger.info(f"Chat id '{chat_id}' not found in allowlist, trying chat title...")
 
 		if not doesGroupNameMatch(group_names, chat_name):
-			logger.info(f"Chat title {chat_name} not found in allowlist, stopping here!")
+			logger.info(f"Chat title '{chat_name}' not found in allowlist, stopping here!")
 			return(None)
 		else:
-			logger.info(f"Chat title {chat_name} found in allowlist, continuing!")
+			logger.info(f"Chat title '{chat_name}' found in allowlist, continuing!")
 
 	else:
 		logger.info(f"Chat id {chat_id} found in allow list, continuing!")
@@ -240,7 +257,7 @@ def echo(update, context):
 	chat_id = update.effective_chat.id
 	chat_name = update.effective_chat.title
 
-	if doesGroupMatch(args.group_id, args.group_name, chat_id, chat_name):
+	if doesGroupMatch(allowed_group_ids, allowed_group_names, chat_id, chat_name):
 		if doesUserMatch(update.message, text):
 			reply = f"Reply: {update.message.text}"
 			reply2 = checkForFoulLanguage(update, text)
@@ -252,15 +269,24 @@ def echo(update, context):
 			context.bot.send_message(chat_id = chat_id, text = reply)
 
 
+
 bot = telegram.Bot(token = args.token)
 logger.info(f"Successfully authenticated! {bot.get_me()}")
 my_username = bot.get_me().username
 my_id = bot.get_me().id
 logger.info(f"My usernamne: {my_username}, My ID: {my_id}")
 
+allowed_group_ids = getAllowedIds(args.group_ids)
+logger.info(f"Allowed Group IDs: {allowed_group_ids}")
+allowed_group_names = getAllowedIds(args.group_names)
+logger.info(f"Allowed Group Names: {allowed_group_names}")
+
 updater = Updater(token = args.token)
 dispatcher = updater.dispatcher
 
+#
+# Uncomment this if I ever want a /start command for some reason.
+#
 #start_handler = CommandHandler('start', start)
 #dispatcher.add_handler(start_handler)
 

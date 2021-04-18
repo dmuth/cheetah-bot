@@ -21,8 +21,8 @@ cd ..
 docker run -it \
 	-v $(pwd):/mnt \
 	-e "TOKEN=${TOKEN}" \
-	-e "GROUP_NAME=${GROUP_NAME}" \
-	-e "GROUP_ID=${GROUP_ID}" \
+	-e "GROUP_NAMES=${GROUP_NAMES}" \
+	-e "GROUP_IDS=${GROUP_IDS}" \
 	cheetah-bot bash
 
 

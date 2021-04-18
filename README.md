@@ -10,7 +10,7 @@ This script lets you run a Telegram Bot that (semi-regularly) posts pictures of 
 - [ ] Will post cheetah pictures to the group semi-regularly
 - [ ] Will reply to the last message with cheetah sounds semi-regularly
 - [x] Any messages sent to it containing profanity or the middle finger emojii will cause the bot to reply with smartass responses.
-- [ ] Will only interact with allowlisted groups/group IDs.
+- [x] Will only interact with allowlisted groups/group IDs.
 - [ ] Rate limiting to prevent accidental flooding of the room.
 
 

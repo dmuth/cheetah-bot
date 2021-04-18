@@ -15,7 +15,11 @@ then
 	echo "# "
 	echo "# Argument specified! Executing command: $@"
 	echo "# "
-	echo "# Run ${CMD} \${TOKEN} --group_name \"\${GROUP_NAME}\" --group_id \"\${GROUP_ID}\" to start the bot"
+	echo "# Run "
+	echo "# "
+	echo "#	${CMD} \${TOKEN} --group_names \"\${GROUP_NAMES}\" --group_ids \"\${GROUP_IDS}\" "
+	echo "# "
+	echo "# to start the bot"
 	echo "# "
 	exec $@
 fi
@@ -30,12 +34,12 @@ then
 	exit 1
 fi
 
-if test ! "${GROUP_NAME}"
+if test ! "${GROUP_NAMES}"
 then
-	if test ! "${GROUP_ID}"
+	if test ! "${GROUP_IDS}"
 	then
 		echo "! "
-		echo "! Neither GROUP_NAME nor GROUP_ID are specified in env!"
+		echo "! Neither GROUP_NAMES nor GROUP_IDS are specified in env!"
 		echo "! "
 		echo "! I need at least ONE set to allowlist specific groups, so I'm gonna bail."
 		echo "! "
@@ -47,6 +51,6 @@ fi
 echo "# "
 echo "# Running ${CMD}..."
 echo "# "
-exec ${CMD} ${TOKEN} --group_name "${GROUP_NAME}" --group_id "${GROUP_ID}"
+exec ${CMD} ${TOKEN} --group_names "${GROUP_NAMES}" --group_ids "${GROUP_IDS}"
 
 
