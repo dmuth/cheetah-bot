@@ -42,9 +42,15 @@ args = parser.parse_args()
 #
 # Handle our errors
 #
-def error_handler(update: object, context: CallbackContext):
+def errorHandler(update: object, context: CallbackContext):
 
-	logger.error(msg="Exception while handling an update:", exc_info=context.error)
+	error_string = str(context.error)
+
+	if "terminated by other getUpdates request" in error_string:
+		logger.warning("Looks like another instance of this bot is running. Stop doing that.")
+
+	else:
+		logger.error(msg="Exception while handling an update:", exc_info=context.error)
 
 	#
 	# Based on an example at 
@@ -267,7 +273,7 @@ dispatcher.add_handler(echo_handler)
 #
 # Catch errors
 #
-dispatcher.add_error_handler(error_handler)
+dispatcher.add_error_handler(errorHandler)
 
 updater.start_polling()
 
