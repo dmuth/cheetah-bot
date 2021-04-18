@@ -7,9 +7,10 @@ FROM python:3
 WORKDIR /mnt
 
 COPY * .
-RUN pip install -r ./requirements.txt
 
 COPY bin/entrypoint.sh /
+
+RUN pip install -r ./requirements.txt
 
 ENTRYPOINT ["/entrypoint.sh"]
 

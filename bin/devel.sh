@@ -18,6 +18,11 @@ cd ..
 #
 # Run the container with a spawned bash shell
 #
-docker run -it -v $(pwd):/mnt cheetah-bot bash
+docker run -it \
+	-v $(pwd):/mnt \
+	-e "TOKEN=${TOKEN}" \
+	-e "GROUP_NAME=${GROUP_NAME}" \
+	-e "GROUP_ID=${GROUP_ID}" \
+	cheetah-bot bash
 
 

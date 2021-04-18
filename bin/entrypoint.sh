@@ -15,7 +15,7 @@ then
 	echo "# "
 	echo "# Argument specified! Executing command: $@"
 	echo "# "
-	echo "# Run ${CMD} to start the bot"
+	echo "# Run ${CMD} \${TOKEN} --group_name \"\${GROUP_NAME}\" --group_id \"\${GROUP_ID}\" to start the bot"
 	echo "# "
 	exec $@
 fi
