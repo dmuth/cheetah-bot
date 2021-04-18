@@ -239,6 +239,7 @@ def echo(update, context):
 			reply = f"Reply: {update.message.text}"
 			reply2 = checkForFoulLanguage(update, text)
 			if reply2:
+				logger.info("Profanity detected")
 				reply = reply2
 
 			logger.info(f"Sending reply: {reply}")
