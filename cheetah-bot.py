@@ -126,19 +126,19 @@ def doesUserMatch(message, text):
 # Update our response if there is foul language in the text 
 # If not, just return the original reply.
 #
-def checkForFoulLanguage(update, text, reply):
+def checkForFoulLanguage(update, text):
 
 	if "fuck" in text:
-		return("Such language!")
+		return("My virgin ears!")
 	elif "shithead" in text:
-		return("Such language!")
+		return("My virgin ears!")
 	elif "🖕" in text:
-		return("Such guestures!")
+		return("My virgin eyes!")
 	elif (update.message.sticker
 		and "🖕" in update.message.sticker.emoji):
-		return("Such guestures!")
+		return("My virgin eyes!")
 	else:
-		return(reply)
+		return(None)
 
 
 #
@@ -192,6 +192,28 @@ def messageIsDm(update, context):
 
 
 #
+# If the message one we can ignore?
+#
+def messageIsIgnorable(update, context, message, my_id):
+
+	chat_id = update.effective_chat.id
+	chat_name = update.effective_chat.title
+
+	if botWasAddedToGroup(update, message, my_id):
+		logger.info(f"I was added to the chat '{chat_name}' ({chat_id})!")
+		return(True)
+
+	if botWasRemovedFromGroup(update, message, my_id):
+		logger.info(f"I was removed from the chat '{chat_name}' ({chat_id})")
+		return(True)
+
+	if messageIsDm(update, context):
+		return(True)
+
+	return(False)
+
+
+#
 # Send a message right back to the sender
 # 
 def echo(update, context):
@@ -206,19 +228,7 @@ def echo(update, context):
 	#logger.info(f"Message: {message}") # Debugging
 	#logger.info(f"Effective chat: {update.effective_chat}") # Debugging
 
-	if botWasAddedToGroup(update, message, my_id):
-		chat_id = update.effective_chat.id
-		chat_name = update.effective_chat.title
-		logger.info(f"I was added to the chat '{chat_name}' ({chat_id})!")
-		return(None)
-
-	if botWasRemovedFromGroup(update, message, my_id):
-		chat_id = update.effective_chat.id
-		chat_name = update.effective_chat.title
-		logger.info(f"I was removed from the chat '{chat_name}' ({chat_id})")
-		return(None)
-
-	if messageIsDm(update, context):
+	if messageIsIgnorable(update, context, message, my_id):
 		return(None)
 
 	chat_id = update.effective_chat.id
@@ -227,7 +237,11 @@ def echo(update, context):
 	if doesGroupMatch(args.group_id, args.group_name, chat_id, chat_name):
 		if doesUserMatch(update.message, text):
 			reply = f"Reply: {update.message.text}"
-			reply = checkForFoulLanguage(update, text, reply)
+			reply2 = checkForFoulLanguage(update, text)
+			if reply2:
+				reply = reply2
+
+			logger.info(f"Sending reply: {reply}")
 			context.bot.send_message(chat_id = chat_id, text = reply)
 
 
