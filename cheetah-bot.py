@@ -8,6 +8,7 @@
 import argparse
 import json
 import logging
+import re
 import traceback
 
 import telegram
@@ -158,6 +159,23 @@ def checkForFoulLanguage(update, text):
 
 
 #
+# Check to see if the message contains "chee" or "cheetahs".
+#
+def messageContainsChee(text):
+
+	#if (re.search(r"\bchee\b", text)
+	if (re.search(r"\bchee\b", text, re.IGNORECASE)
+		or re.search(r"\bchees\b", text, re.IGNORECASE)
+		or re.search(r"\bcheet\b", text, re.IGNORECASE)
+		or re.search(r"\bcheets\b", text, re.IGNORECASE)
+		or re.search(r"\bcheetah\b", text, re.IGNORECASE)
+		):
+		return("Chee!")
+
+	return(None)
+
+
+#
 # Check to see if a user is me
 #
 def userIsMe(user, my_id):
@@ -242,7 +260,12 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names):
 	#
 	def echo_core(update, context):
 
-		text = "(No text, sticker/file?)"
+		# Set some defaults
+		text = "(No text, sticker/file/group message?)"
+		reply = ""
+		reply_to_user = False
+
+		# Filter newlines out of our message for logging and matching purposes
 		message = update.message
 		if update.message.text:
 			text = update.message.text.replace("\r", " ").replace("\n", " ")
@@ -252,22 +275,53 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names):
 		#logger.info(f"Message: {message}") # Debugging
 		#logger.info(f"Effective chat: {update.effective_chat}") # Debugging
 
+		# Was this a bot add/remove or a DM?
 		if messageIsIgnorable(update, context, message, my_id):
 			return(None)
 
+		#
+		# Bail out if we're not in an allowed group
+		#
 		chat_id = update.effective_chat.id
 		chat_name = update.effective_chat.title
+		if not doesGroupMatch(allowed_group_ids, allowed_group_names, chat_id, chat_name):
+			return(None)
 
-		if doesGroupMatch(allowed_group_ids, allowed_group_names, chat_id, chat_name):
-			if doesUserMatch(my_id, my_username, update.message, text):
-				reply = f"Reply: {update.message.text}"
-				reply2 = checkForFoulLanguage(update, text)
-				if reply2:
-					logger.info("Profanity detected")
-					reply = reply2
+		#
+		# See if anyone in the chat said "cheetah" or "chee"
+		#
+		if messageContainsChee(text):
+			reply = messageContainsChee(text)
+			reply_to_user = True
+			logger.info("String 'chee' detected")
 
-				logger.info(f"Sending reply: {reply}")
-				context.bot.send_message(chat_id = chat_id, text = reply)
+		#
+		# If the message wasn't to the bot, and we're not replying to a user, stop.
+		#
+		if not reply_to_user:
+			if not doesUserMatch(my_id, my_username, update.message, text):
+				return(None)
+
+		#
+		# I'm not thrilled about calling checkForFoulLanguage() twice, but Python
+		# doesn't let me do "if (value = func())" syntax like other languages do.
+		# Once this goes into a class, I can have the function just set a classwide value instead.
+		#
+		if checkForFoulLanguage(update, text):
+			reply = checkForFoulLanguage(update, text)
+			logger.info("Profanity detected")
+
+		# Reply of last resort (replace with random text or image in the future)
+		if not reply:
+			reply = f"Reply: {update.message.text}"
+
+		logger.info(f"Sending reply: {reply}")
+		if not reply_to_user:
+			context.bot.send_message(chat_id = chat_id, text = reply)
+		else:
+			context.bot.send_message(chat_id = chat_id, text = reply, 
+				reply_to_message_id = message.message_id)
+			
 
 	return(echo_core)
 
