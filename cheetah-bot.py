@@ -18,13 +18,6 @@ from telegram.ext import CommandHandler, MessageHandler, Filters
 
 
 #
-# Allow listed of IDs and name (substrings) where this bot will operate.
-#
-allowed_group_ids = ""
-allowed_group_names = ""
-
-
-#
 # Set up the logger
 #
 logger = logging
@@ -130,7 +123,7 @@ def doesGroupMatch(group_ids, group_names, chat_id, chat_name):
 #
 # Was this message to me, or a reply to me?
 #
-def doesUserMatch(message, text):
+def doesUserMatch(my_id, my_username, message, text):
 
 	reply_to = message.reply_to_message
 
@@ -237,70 +230,93 @@ def messageIsIgnorable(update, context, message, my_id):
 
 
 #
-# Send a message right back to the sender
+# This is a wrapper which returns our actual handler.
+# The reason for this is so that the variables we need can be in-scope, 
+# without having to make them globals.
+# This will make it easier to turn these functions into a class in the future.
+#
+def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names):
+
+	#
+	# Our handler that is fired when a message comes in
+	#
+	def echo_core(update, context):
+
+		text = "(No text, sticker/file?)"
+		message = update.message
+		if update.message.text:
+			text = update.message.text.replace("\r", " ").replace("\n", " ")
+
+		logger.info(f"New Message: chat_id={update.effective_chat.id}, text={text[0:30]}...")
+		#logger.info(f"Update: {update}") # Debugging
+		#logger.info(f"Message: {message}") # Debugging
+		#logger.info(f"Effective chat: {update.effective_chat}") # Debugging
+
+		if messageIsIgnorable(update, context, message, my_id):
+			return(None)
+
+		chat_id = update.effective_chat.id
+		chat_name = update.effective_chat.title
+
+		if doesGroupMatch(allowed_group_ids, allowed_group_names, chat_id, chat_name):
+			if doesUserMatch(my_id, my_username, update.message, text):
+				reply = f"Reply: {update.message.text}"
+				reply2 = checkForFoulLanguage(update, text)
+				if reply2:
+					logger.info("Profanity detected")
+					reply = reply2
+
+				logger.info(f"Sending reply: {reply}")
+				context.bot.send_message(chat_id = chat_id, text = reply)
+
+	return(echo_core)
+
+
+#
+# Our main entrypoint
+#
+def main():
+
+	bot = telegram.Bot(token = args.token)
+	logger.info(f"Successfully authenticated! {bot.get_me()}")
+	my_username = bot.get_me().username
+	my_id = bot.get_me().id
+	logger.info(f"My usernamne: {my_username}, My ID: {my_id}")
+
+	allowed_group_ids = getAllowedIds(args.group_ids)
+	logger.info(f"Allowed Group IDs: {allowed_group_ids}")
+	allowed_group_names = getAllowedIds(args.group_names)
+	logger.info(f"Allowed Group Names: {allowed_group_names}")
+
+	updater = Updater(token = args.token)
+	dispatcher = updater.dispatcher
+
+	#
+	# Catch errors
+	#
+	dispatcher.add_error_handler(errorHandler)
+
+	#
+	# Uncomment this if I ever want a /start command for some reason.
+	#
+	#start_handler = CommandHandler('start', start)
+	#dispatcher.add_handler(start_handler)
+
+	#
+	# We're just gonna reply to everything.
+	#
+	cb = echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names)
+	echo_handler = MessageHandler(Filters.all, cb)
+
+	dispatcher.add_handler(echo_handler)
+
+	updater.start_polling()
+
+
+#
+# Start the bot!
 # 
-def echo(update, context):
+main()
 
-	text = "(No text, sticker/file?)"
-	message = update.message
-	if update.message.text:
-		text = update.message.text.replace("\r", " ").replace("\n", " ")
-
-	logger.info(f"New Message: chat_id={update.effective_chat.id}, text={text[0:30]}...")
-	#logger.info(f"Update: {update}") # Debugging
-	#logger.info(f"Message: {message}") # Debugging
-	#logger.info(f"Effective chat: {update.effective_chat}") # Debugging
-
-	if messageIsIgnorable(update, context, message, my_id):
-		return(None)
-
-	chat_id = update.effective_chat.id
-	chat_name = update.effective_chat.title
-
-	if doesGroupMatch(allowed_group_ids, allowed_group_names, chat_id, chat_name):
-		if doesUserMatch(update.message, text):
-			reply = f"Reply: {update.message.text}"
-			reply2 = checkForFoulLanguage(update, text)
-			if reply2:
-				logger.info("Profanity detected")
-				reply = reply2
-
-			logger.info(f"Sending reply: {reply}")
-			context.bot.send_message(chat_id = chat_id, text = reply)
-
-
-
-bot = telegram.Bot(token = args.token)
-logger.info(f"Successfully authenticated! {bot.get_me()}")
-my_username = bot.get_me().username
-my_id = bot.get_me().id
-logger.info(f"My usernamne: {my_username}, My ID: {my_id}")
-
-allowed_group_ids = getAllowedIds(args.group_ids)
-logger.info(f"Allowed Group IDs: {allowed_group_ids}")
-allowed_group_names = getAllowedIds(args.group_names)
-logger.info(f"Allowed Group Names: {allowed_group_names}")
-
-updater = Updater(token = args.token)
-dispatcher = updater.dispatcher
-
-#
-# Uncomment this if I ever want a /start command for some reason.
-#
-#start_handler = CommandHandler('start', start)
-#dispatcher.add_handler(start_handler)
-
-#
-# We're just gonna reply to everything.
-#
-echo_handler = MessageHandler(Filters.all, echo)
-dispatcher.add_handler(echo_handler)
-
-#
-# Catch errors
-#
-dispatcher.add_error_handler(errorHandler)
-
-updater.start_polling()
 
 
