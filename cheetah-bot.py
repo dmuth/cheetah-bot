@@ -9,13 +9,17 @@ import argparse
 import json
 import logging
 import re
+import sys
 import traceback
+sys.path.append("lib")
 
 import telegram
 from telegram.error import TelegramError
 from telegram.ext import Updater
 from telegram.ext import CallbackContext
 from telegram.ext import CommandHandler, MessageHandler, Filters
+
+import rate_limiter
 
 
 #
@@ -36,8 +40,12 @@ parser.add_argument("--group_ids", type = str,
 	help = "Comma-delimited list of group IDs where this bot can operate.  IDs must be an exact match.")
 parser.add_argument("--group_names", type = str,
 	help = "Comma-delimited group names which are matched on a substring basis.  Useful when unsure of the group ID (which can then be gotten by debug messages) Matching is done on a substring basis, so be careful!")
+parser.add_argument("--actions", type = float, default = 10,
+	help = "")
+parser.add_argument("--period", type = int, default = 600,
+	help = "")
 args = parser.parse_args()
-#print(args) # Debugging
+print(args) # Debugging
 
 
 #
@@ -248,12 +256,40 @@ def messageIsIgnorable(update, context, message, my_id):
 
 
 #
+# Send a message in a way that honors our rate limiter's quota.
+#
+def sendMessage(bot, limiter, chat_id, reply, message_id = None):
+
+	if limiter.action():
+		logger.info(f"Sending reply: {reply}, quota_left={limiter.getQuota()}")
+		if not message_id:
+			bot.send_message(chat_id = chat_id, text = reply)
+		else:
+			bot.send_message(chat_id = chat_id, text = reply, 
+				reply_to_message_id = message_id)
+
+		#
+		# Let the group know that we've gone over our quota.
+		# Yes, this will only work with one group, even if we are listening in multiple groups.
+		#
+		bot.send_message(chat_id = chat_id, text = "I feel asleep.")
+
+	else:
+		logger.info("Not sending message, quota currently exhausted.")
+
+
+#
 # This is a wrapper which returns our actual handler.
 # The reason for this is so that the variables we need can be in-scope, 
 # without having to make them globals.
 # This will make it easier to turn these functions into a class in the future.
 #
-def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names):
+def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, actions, period):
+
+	#
+	# Set up our rate limiter
+	#
+	limiter = rate_limiter.Limiter(actions = actions, period = period)
 
 	#
 	# Our handler that is fired when a message comes in
@@ -315,12 +351,11 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names):
 		if not reply:
 			reply = f"Reply: {update.message.text}"
 
-		logger.info(f"Sending reply: {reply}")
-		if not reply_to_user:
-			context.bot.send_message(chat_id = chat_id, text = reply)
-		else:
-			context.bot.send_message(chat_id = chat_id, text = reply, 
-				reply_to_message_id = message.message_id)
+		#if not reply_to_user:
+		#	sendMessage(context.bot, limiter, chat_id, reply)
+		#else:
+		#	sendMessage(context.bot, limiter, chat_id, reply, message_id = message.message_id)
+		sendMessage(context.bot, limiter, chat_id, reply, message_id = message.message_id)
 			
 
 	return(echo_core)
@@ -329,7 +364,7 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names):
 #
 # Our main entrypoint
 #
-def main():
+def main(args):
 
 	bot = telegram.Bot(token = args.token)
 	logger.info(f"Successfully authenticated! {bot.get_me()}")
@@ -359,7 +394,7 @@ def main():
 	#
 	# We're just gonna reply to everything.
 	#
-	cb = echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names)
+	cb = echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, args.actions, args.period)
 	echo_handler = MessageHandler(Filters.all, cb)
 
 	dispatcher.add_handler(echo_handler)
@@ -370,7 +405,7 @@ def main():
 #
 # Start the bot!
 # 
-main()
+main(args)
 
 
 
