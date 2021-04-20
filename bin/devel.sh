@@ -23,6 +23,8 @@ docker run -it \
 	-e "TOKEN=${TOKEN}" \
 	-e "GROUP_NAMES=${GROUP_NAMES}" \
 	-e "GROUP_IDS=${GROUP_IDS}" \
+	-e "ACTIONS=${ACTIONS}" \
+	-e "PERIOD=${PERIOD}" \
 	cheetah-bot bash
 
 

@@ -17,7 +17,7 @@ then
 	echo "# "
 	echo "# Run "
 	echo "# "
-	echo "#	${CMD} \${TOKEN} --group_names \"\${GROUP_NAMES}\" --group_ids \"\${GROUP_IDS}\" "
+	echo "#	${CMD} \${TOKEN} --group_names \"\${GROUP_NAMES}\" --group_ids \"\${GROUP_IDS}\" --actions \${ACTIONS} --period \${PERIOD}"
 	echo "# "
 	echo "# to start the bot"
 	echo "# "
@@ -51,6 +51,6 @@ fi
 echo "# "
 echo "# Running ${CMD}..."
 echo "# "
-exec ${CMD} ${TOKEN} --group_names "${GROUP_NAMES}" --group_ids "${GROUP_IDS}"
+exec ${CMD} ${TOKEN} --group_names "${GROUP_NAMES}" --group_ids "${GROUP_IDS}" --actions ${ACTIONS} --period ${PERIOD}
 
 
