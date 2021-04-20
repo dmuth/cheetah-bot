@@ -10,6 +10,8 @@ import json
 import logging
 import re
 import sys
+import time
+import threading
 import traceback
 sys.path.append("lib")
 
@@ -256,12 +258,25 @@ def messageIsIgnorable(update, context, message, my_id):
 
 
 #
+# Fired $period seconds after the queue was last empty and the bot went to sleep.
+# This will check to see if the queue is actually full, as the bot may have been pinged a few
+# times while the queue refilled.  As such, the announcement will go out only if the 
+# bot is "fully rested" aka has a full queue.
+#
+def wakeUp(bot, limiter, chat_id):
+	logger.info("Thread: Firing callback!")
+	if limiter.isQuotaFull():
+		logger.info("Thread: Queue is full, sending a message to the channel!")
+		bot.send_message(chat_id = chat_id, text = "I'm back and fully rested!  Did ya miss chee?")
+
+
+#
 # Send a message in a way that honors our rate limiter's quota.
 #
 def sendMessage(bot, limiter, chat_id, reply, message_id = None):
 
 	if limiter.action():
-		logger.info(f"Sending reply: {reply}, quota_left={limiter.getQuota()}")
+		logger.info(f"Sending reply: {reply}, quota_left={limiter.getQuota():.3f}")
 		if not message_id:
 			bot.send_message(chat_id = chat_id, text = reply)
 		else:
@@ -272,7 +287,10 @@ def sendMessage(bot, limiter, chat_id, reply, message_id = None):
 		# Let the group know that we've gone over our quota.
 		# Yes, this will only work with one group, even if we are listening in multiple groups.
 		#
-		bot.send_message(chat_id = chat_id, text = "I feel asleep.")
+		if limiter.isQuotaExhausted():
+			bot.send_message(chat_id = chat_id, text = "I feel asleep.")
+			threading.Timer(limiter.getTimeUntilQuotaFull(), 
+				wakeUp, args = (bot, limiter, chat_id,)).start()
 
 	else:
 		logger.info("Not sending message, quota currently exhausted.")

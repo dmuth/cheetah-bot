@@ -26,6 +26,9 @@ class Limiter():
 	#
 	quota = 0
 
+	# How much the queue fills per second.
+	fill_rate = 0
+
 
 	def __init__(self, actions = 10, period = 600):
 
@@ -33,11 +36,28 @@ class Limiter():
 		self.period = period
 		self.prev_time = time.time()
 		self.quota = actions
+		self.fill_rate = actions / period
 
 		if self.actions < 1:
 			raise Exception(f"Actions must be at least 1. ({self.actions} was provided.)")
 
-		logger.info(f"Limiter initialized with {actions} actions per period of {period} seconds. Quota = {self.quota}, replenished at {actions/period:.3f}/sec.")
+		logger.info(f"Limiter initialized with {actions} actions per period of {period} seconds. Quota = {self.quota}, replenished at {self.fill_rate:.3f}/sec.")
+
+	#
+	# Update the current value of our quota based on how much 
+	# time has elapsed since when we checked last.
+	#
+	def _updateQuota(self):
+		current_time = time.time()
+		elapsed = current_time - self.prev_time
+		self.prev_time = current_time
+
+		# Replenish the quota based on how much time has elapsed
+		self.quota += elapsed * self.fill_rate
+
+		# Don't let our quota exceed the max
+		if self.quota > self.actions:
+			self.quota = self.actions
 
 
 	#
@@ -47,17 +67,7 @@ class Limiter():
 	#
 	def action(self) -> bool:
 
-		current_time = time.time()
-		elapsed = current_time - self.prev_time
-		self.prev_time = current_time
-
-		# Replenish the quota based on how much time has elapsed
-		self.quota += elapsed * ( self.actions / self.period )
-
-		# Don't let our quota exceed the max
-		if self.quota > self.actions:
-			self.quota = self.actions
-
+		self._updateQuota()
 		#print(f"Quota left: {self.quota}") # Debugging
 		
 		if self.quota < 1:
@@ -70,9 +80,36 @@ class Limiter():
 
 
 	#
-	# Return our current quota.
+	# Return our current quota value.
 	#
 	def getQuota(self) -> float:
+		self._updateQuota()
 		return(self.quota)
+
+
+	#
+	# Return if the quota is full or not.
+	#
+	def isQuotaFull(self) -> bool:
+		self._updateQuota()
+		return(self.quota == self.actions)
+
+
+	#
+	# Check to see if the quota is exhausted ATM.
+	#
+	def isQuotaExhausted(self) -> bool:
+		if self.quota < 1:
+			return(True)
+		return(False)
+
+
+	#
+	# Return how many seconds until the quota is full.
+	# This is really just a silly abstraction to make the calling code easier to read.
+	#
+	def getTimeUntilQuotaFull(self) -> float:
+		return(self.period)
+
 
 
