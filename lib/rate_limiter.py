@@ -69,3 +69,10 @@ class Limiter():
 		return(True)
 
 
+	#
+	# Return our current quota.
+	#
+	def getQuota(self) -> float:
+		return(self.quota)
+
+

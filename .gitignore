@@ -7,3 +7,5 @@
 # Don't accidentally check in credentials!
 .env
 
+__pycache__
+
