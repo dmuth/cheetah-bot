@@ -175,12 +175,13 @@ def messageContainsChee(text):
 
 	#if (re.search(r"\bchee\b", text)
 	if (re.search(r"\bchee\b", text, re.IGNORECASE)
+		or re.search(r"^/chee$", text, re.IGNORECASE)
 		or re.search(r"\bchees\b", text, re.IGNORECASE)
 		or re.search(r"\bcheet\b", text, re.IGNORECASE)
 		or re.search(r"\bcheets\b", text, re.IGNORECASE)
 		or re.search(r"\bcheetah\b", text, re.IGNORECASE)
 		):
-		return("Chee!")
+		return("Chee")
 
 	return(None)
 
@@ -258,16 +259,50 @@ def messageIsIgnorable(update, context, message, my_id):
 
 
 #
+# This flag is set when the bot reaches a fully awake state (aka the queue is full)
+# Going to sleep sets this to false, the queue being full again sets this to true.
+# The reason behind this flag is so that sleep and wake messages are only printed ONCE
+# at each extreme, instead of all the time of the bot sees regular traffic that keeps
+# its queue partially filled.
+#
+# I hate that this is global.  When this bot is converted to a class, this will be addressed.
+#
+was_fully_awake = True
+
+
+#
+# Our queue is exhausted so we're going to tweak the was_fully_awake flag,
+# print a sleep message (if was_fully_awake was full), and schedule a callback
+# for when the bot should be fully awake.
+#
+def goToSleep(bot, limiter, chat_id):
+
+	global was_fully_awake
+
+	if was_fully_awake:
+		bot.send_message(chat_id = chat_id, text = "I feel asleep.")
+
+	was_fully_awake = False
+
+	threading.Timer(limiter.getTimeUntilQuotaFull(), 
+		wakeUp, args = (bot, limiter, chat_id,)).start()
+
+
+#
 # Fired $period seconds after the queue was last empty and the bot went to sleep.
 # This will check to see if the queue is actually full, as the bot may have been pinged a few
 # times while the queue refilled.  As such, the announcement will go out only if the 
 # bot is "fully rested" aka has a full queue.
 #
 def wakeUp(bot, limiter, chat_id):
-	logger.info("Thread: Firing callback!")
+
+	global was_fully_awake
+
+	logger.info(f"Thread: Firing callback! quota_left={limiter.getQuota():.3f}")
 	if limiter.isQuotaFull():
 		logger.info("Thread: Queue is full, sending a message to the channel!")
 		bot.send_message(chat_id = chat_id, text = "I'm back and fully rested!  Did ya miss chee?")
+		was_fully_awake = True
 
 
 #
@@ -288,9 +323,7 @@ def sendMessage(bot, limiter, chat_id, reply, message_id = None):
 		# Yes, this will only work with one group, even if we are listening in multiple groups.
 		#
 		if limiter.isQuotaExhausted():
-			bot.send_message(chat_id = chat_id, text = "I feel asleep.")
-			threading.Timer(limiter.getTimeUntilQuotaFull(), 
-				wakeUp, args = (bot, limiter, chat_id,)).start()
+			goToSleep(bot, limiter, chat_id)
 
 	else:
 		logger.info("Not sending message, quota currently exhausted.")
