@@ -156,9 +156,13 @@ def doesUserMatch(my_id, my_username, message, text):
 #
 def checkForFoulLanguage(update, text):
 
-	if "fuck" in text:
+	if re.search(r"fuck", text, re.IGNORECASE):
+		return("Such language!")
+	if re.search(r"dammit", text, re.IGNORECASE):
 		return("My virgin ears!")
-	elif "shithead" in text:
+	if re.search(r"sanic\b", text, re.IGNORECASE):
+		return("Gotta go fast.")
+	if re.search(r"shit\b", text, re.IGNORECASE):
 		return("My virgin ears!")
 	elif "🖕" in text:
 		return("My virgin eyes!")
@@ -309,15 +313,30 @@ def wakeUp(bot, limiter, chat_id):
 #
 # Send a message in a way that honors our rate limiter's quota.
 #
-def sendMessage(bot, limiter, chat_id, reply, message_id = None):
+def sendMessage(bot, limiter, chat_id, reply = None, image_url = None, message_id = None):
 
 	if limiter.action():
-		logger.info(f"Sending reply: {reply}, quota_left={limiter.getQuota():.3f}")
-		if not message_id:
-			bot.send_message(chat_id = chat_id, text = reply)
+
+		if reply:
+			logger.info(f"Sending reply: {reply}, quota_left={limiter.getQuota():.3f}")
+			if not message_id:
+				bot.send_message(chat_id = chat_id, text = reply)
+			else:
+				bot.send_message(chat_id = chat_id, text = reply, 
+					reply_to_message_id = message_id)
+
+		elif image_url:
+			logger.info(f"Sending reply: {image_url}, quota_left={limiter.getQuota():.3f}")
+			caption = f"Chee {image_url}"
+			if not message_id:
+				bot.send_photo(chat_id = chat_id, photo = image_url, caption = caption)
+			else:
+				bot.send_photo(chat_id = chat_id, photo = image_url, caption = caption,
+					reply_to_message_id = message_id)
+
 		else:
-			bot.send_message(chat_id = chat_id, text = reply, 
-				reply_to_message_id = message_id)
+			raise Exception(f"Not sure what to send with a message that has no text or URL")
+
 
 		#
 		# Let the group know that we've gone over our quota.
@@ -334,6 +353,7 @@ def sendMessage(bot, limiter, chat_id, reply, message_id = None):
 # Return a random cheetah noise.
 #
 def getRandomMessageText():
+	# TODO: Once converted into a class, lets put these into a file that I can read on load-time
 	replies = [
 		"Chirp!",
 		"chee",
@@ -350,6 +370,35 @@ def getRandomMessageText():
 		"Coffee?"
 		]
 	return(random.choice(replies))
+
+#
+# Return a random image URL
+#
+def getRandomMessageImage():
+	# TODO: Once converted into a class, lets put these into a file that I can read on load-time
+	replies = [
+		"https://i.imgur.com/EsFE7i4.jpg",
+		"https://i.imgur.com/eloOjqp.png",
+		"https://i.imgur.com/fubK32Z.jpg",
+		"https://i.imgur.com/q7giUE0.jpg",
+		"https://i.imgur.com/tIz5Em4.jpg",
+		"https://i.imgur.com/e1eDYO0.jpg",
+		"https://i.imgur.com/S5zigBc.jpg",
+		"https://i.imgur.com/6NEpeGl.jpg",
+		"https://i.imgur.com/46DcSPF.jpg",
+		"https://i.imgur.com/qyvSsam.jpg",
+		"https://i.imgur.com/IrIJaUY.jpg",
+		"https://i.imgur.com/gcL1ldT.jpg",
+		"https://i.imgur.com/pyqoQNF.jpg",
+		"https://i.imgur.com/5mQwjNS.jpg",
+		"https://i.imgur.com/iLdeLYH.jpg",
+		"https://i.imgur.com/hdS3MVQ.jpg",
+		"https://i.imgur.com/xOaxMC6.jpg",
+		"https://i.imgur.com/6u5t9VQ.jpg",
+		"https://i.imgur.com/38D4R1N.jpg",
+		]
+	return(random.choice(replies))
+
 
 
 #
@@ -406,6 +455,16 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 			logger.info("String 'chee' detected")
 
 		#
+		# I'm not thrilled about calling checkForFoulLanguage() twice, but Python
+		# doesn't let me do "if (value = func())" syntax like other languages do.
+		# Once this goes into a class, I can have the function just set a classwide value instead.
+		#
+		if checkForFoulLanguage(update, text):
+			reply = checkForFoulLanguage(update, text)
+			reply_to_user = True
+			logger.info("Profanity detected")
+
+		#
 		# If the message wasn't to the bot, and we're not replying to a user, stop.
 		#
 		if not reply_to_user:
@@ -413,25 +472,22 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 				return(None)
 
 		#
-		# I'm not thrilled about calling checkForFoulLanguage() twice, but Python
-		# doesn't let me do "if (value = func())" syntax like other languages do.
-		# Once this goes into a class, I can have the function just set a classwide value instead.
+		# If we already have a reply, then send it out.
+		# Otherwise, we have no idea what the user is talking about, so let's just
+		# grab a random string of text or URL.
 		#
-		if checkForFoulLanguage(update, text):
-			reply = checkForFoulLanguage(update, text)
-			logger.info("Profanity detected")
-
-		# Reply of last resort (replace with random text or image in the future)
-		if not reply:
-			#reply = f"Reply: {update.message.text}"
-			reply = getRandomMessageText()
-
-		#if not reply_to_user:
-		#	sendMessage(context.bot, limiter, chat_id, reply)
-		#else:
-		#	sendMessage(context.bot, limiter, chat_id, reply, message_id = message.message_id)
-		sendMessage(context.bot, limiter, chat_id, reply, message_id = message.message_id)
-			
+		if reply:
+			sendMessage(context.bot, limiter, chat_id, reply = reply, 
+				message_id = message.message_id)
+		else:
+			if random.randint(0, 1):
+				reply = getRandomMessageText()
+				sendMessage(context.bot, limiter, chat_id, reply = reply, 
+					message_id = message.message_id)
+			else:
+				reply = getRandomMessageImage()
+				sendMessage(context.bot, limiter, chat_id, image_url = reply, 
+					message_id = message.message_id)
 
 	return(echo_core)
 
