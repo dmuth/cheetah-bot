@@ -8,6 +8,7 @@
 import argparse
 import json
 import logging
+import random
 import re
 import sys
 import time
@@ -330,6 +331,28 @@ def sendMessage(bot, limiter, chat_id, reply, message_id = None):
 
 
 #
+# Return a random cheetah noise.
+#
+def getRandomMessageText():
+	replies = [
+		"Chirp!",
+		"chee",
+		"Chee?",
+		"Chee!",
+		"Mow!",
+		"Let's perch on things!",
+		"Pet me!",
+		"*incessant chirping*",
+		"*meows for food*",
+		"*meowing sounds*",
+		"Let's do a flat!",
+		"I'm a flatcat, wouldn't you like to be a flatcat too?",
+		"Coffee?"
+		]
+	return(random.choice(replies))
+
+
+#
 # This is a wrapper which returns our actual handler.
 # The reason for this is so that the variables we need can be in-scope, 
 # without having to make them globals.
@@ -400,7 +423,8 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 
 		# Reply of last resort (replace with random text or image in the future)
 		if not reply:
-			reply = f"Reply: {update.message.text}"
+			#reply = f"Reply: {update.message.text}"
+			reply = getRandomMessageText()
 
 		#if not reply_to_user:
 		#	sendMessage(context.bot, limiter, chat_id, reply)
