@@ -7,11 +7,11 @@ This script lets you run a Telegram Bot that (semi-regularly) posts pictures of 
 
 ## Features
 
-- Will reply to the last message with cheetah sounds semi-regularly
-- Any messages sent to it containing profanity or the middle finger emojii will cause the bot to reply with smartass responses.
+- Will reply to every Nth message with cheetah sounds or pictures. (configurable)
+- Messages with profanity or the middle finger emoji will provoke smartass responses.
 - Will only interact with allowlisted groups/group IDs.
-- Rate limiting to prevent accidental flooding of the room.
-- Message age checking to prevent spamming the group after a hiatus.
+- Configurable rate limiting to prevent accidental flooding of the group.
+- Age checking on messages to prevent spamming the group after a hiatus.
 
 
 ## Usage
