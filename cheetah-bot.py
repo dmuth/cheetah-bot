@@ -10,6 +10,7 @@ import json
 import logging
 import random
 import re
+import pathlib
 import sys
 import time
 import threading
@@ -49,6 +50,10 @@ parser.add_argument("--period", type = int, default = 600,
 	help = "Used for rate-limiting.  How long is our period in seconds?")
 parser.add_argument("--reply-every-n-messages", type = int, default = 100,
 	help = "Every n messages that aren't normally handled by the bot, reply to one.  Disable with -1.")
+parser.add_argument("--quotes-file", type = str,
+	help = "Text file that contains things the bot says, one saying per line.")
+parser.add_argument("--urls-file", type = str,
+	help = "CSV file that contains URLs of images and captions for them.")
 args = parser.parse_args()
 #print(args) # Debugging
 
@@ -315,7 +320,7 @@ def wakeUp(bot, limiter, chat_id):
 #
 # Send a message in a way that honors our rate limiter's quota.
 #
-def sendMessage(bot, limiter, chat_id, reply = None, image_url = None, message_id = None):
+def sendMessage(bot, limiter, chat_id, reply = None, image_url = None, caption = None, message_id = None):
 
 	if limiter.action():
 
@@ -329,7 +334,6 @@ def sendMessage(bot, limiter, chat_id, reply = None, image_url = None, message_i
 
 		elif image_url:
 			logger.info(f"Sending reply: {image_url}, quota_left={limiter.getQuota():.3f}")
-			caption = f"Chee {image_url}"
 			if not message_id:
 				bot.send_photo(chat_id = chat_id, photo = image_url, caption = caption)
 			else:
@@ -354,65 +358,36 @@ def sendMessage(bot, limiter, chat_id, reply = None, image_url = None, message_i
 #
 # Return a random cheetah noise.
 #
-def getRandomMessageText():
-	# TODO: Once converted into a class, lets put these into a file that I can read on load-time
-	replies = [
-		"Chirp!",
-		"chee",
-		"Chee?",
-		"Chee!",
-		"Mow!",
-		"Let's perch on things!",
-		"Pet me!",
-		"*incessant chirping*",
-		"*meows for food*",
-		"*meowing sounds*",
-		"Let's do a flat!",
-		"I'm a flatcat, wouldn't you like to be a flatcat too?",
-		"Coffee?"
-		]
+def getRandomMessageText(replies):
 	return(random.choice(replies))
 
+
 #
-# Return a random image URL
+# Return a random image URL and its caption
 #
-def getRandomMessageImage():
-	# TODO: Once converted into a class, lets put these into a file that I can read on load-time
-	replies = [
-		"https://i.imgur.com/EsFE7i4.jpg",
-		"https://i.imgur.com/eloOjqp.png",
-		"https://i.imgur.com/fubK32Z.jpg",
-		"https://i.imgur.com/q7giUE0.jpg",
-		"https://i.imgur.com/tIz5Em4.jpg",
-		"https://i.imgur.com/e1eDYO0.jpg",
-		"https://i.imgur.com/S5zigBc.jpg",
-		"https://i.imgur.com/6NEpeGl.jpg",
-		"https://i.imgur.com/46DcSPF.jpg",
-		"https://i.imgur.com/qyvSsam.jpg",
-		"https://i.imgur.com/IrIJaUY.jpg",
-		"https://i.imgur.com/gcL1ldT.jpg",
-		"https://i.imgur.com/pyqoQNF.jpg",
-		"https://i.imgur.com/5mQwjNS.jpg",
-		"https://i.imgur.com/iLdeLYH.jpg",
-		"https://i.imgur.com/hdS3MVQ.jpg",
-		"https://i.imgur.com/xOaxMC6.jpg",
-		"https://i.imgur.com/6u5t9VQ.jpg",
-		"https://i.imgur.com/38D4R1N.jpg",
-		]
-	return(random.choice(replies))
+def getRandomMessageImage(replies):
+
+	retval = {}
+
+	reply = random.choice(replies)
+	retval["url"] = reply[0]
+	retval["caption"] = reply[1] + "\n\n" + reply[0]
+
+	return(retval)
 
 
 #
 # Figure out which reply function to use, get a reply, and send it off!
 #
-def sendRandomReply(bot, limiter, chat_id, message_id = None):
+def sendRandomReply(bot, limiter, chat_id, message_id, quotes, urls):
 
 	if random.randint(0, 1):
-		reply = getRandomMessageText()
+		reply = getRandomMessageText(quotes)
 		sendMessage(bot, limiter, chat_id, reply = reply, message_id = message_id)
 	else:
-		reply = getRandomMessageImage()
-		sendMessage(bot, limiter, chat_id, image_url = reply, message_id = message_id)
+		reply = getRandomMessageImage(urls)
+		sendMessage(bot, limiter, chat_id, image_url = reply["url"], caption = reply["caption"],
+			message_id = message_id)
 
 
 #
@@ -450,7 +425,8 @@ def updateCounter(chat_id, reply_every_n) -> bool:
 # without having to make them globals.
 # This will make it easier to turn these functions into a class in the future.
 #
-def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, actions, period, reply_every_n):
+def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, actions, period, reply_every_n,
+	quotes, urls):
 
 	#
 	# Set up our rate limiter
@@ -524,7 +500,8 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 				should_reply = updateCounter(chat_id, reply_every_n)
 				if should_reply:
 					sendRandomReply(context.bot, limiter, chat_id, 
-						message_id = message.message_id)
+						message_id = message.message_id,
+						quotes = quotes, urls = urls)
 				return(None)
 
 		#
@@ -534,19 +511,70 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 		#
 		if reply:
 			sendMessage(context.bot, limiter, chat_id, reply = reply, 
-				message_id = message.message_id)
+				message_id = message.message_id,
+				quotes = quotes, urls = urls)
 		else:
 			sendRandomReply(context.bot, limiter, chat_id, 
-				message_id = message.message_id)
+				message_id = message.message_id,
+				quotes = quotes, urls = urls)
 
 
 	return(echo_core)
 
 
 #
+# Read our quotes and return them in a list
+#
+def readQuotes(quotes_file) -> list:
+
+	quotes = pathlib.Path.cwd() / quotes_file
+	if not quotes.exists():
+		raise Exception(f"Quotes file {quotes} does not exist!")
+	if not quotes.is_file():
+		raise Exception(f"Quotes file {quotes} exists but is not a file!")
+	quotes = quotes.read_text()
+	quotes = quotes.splitlines()
+
+	return(quotes)
+
+
+#
+# Read our list of URLs and return them and their captions in a list.
+#
+def readUrls(urls_file) -> list:
+
+	#
+	# Read our URLs and captions for them.
+	# 
+	urls_file = pathlib.Path.cwd() / args.urls_file
+	if not urls_file.exists():
+		raise Exception(f"URLs file {urls_file} does not exist!")
+	if not urls_file.is_file():
+		raise Exception(f"URLs file {urls_file} exists but is not a file!")
+	urls_file_contents = urls_file.read_text()
+
+	#
+	# Separate the URL from the (optional) caption.
+	#
+	urls = []
+	for line in urls_file_contents.splitlines():
+		fields = line.split(",", 1)
+		if fields[0] == "url":
+			continue
+		urls.append(fields)
+
+	return(urls)
+
+
+#
 # Our main entrypoint
 #
 def main(args):
+
+	print(args)
+
+	quotes = readQuotes(args.quotes_file)
+	urls = readUrls(args.urls_file)
 
 	bot = telegram.Bot(token = args.token)
 	logger.info(f"Successfully authenticated! {bot.get_me()}")
@@ -577,7 +605,8 @@ def main(args):
 	# We're just gonna reply to everything.
 	#
 	cb = echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, 
-		args.actions, args.period, args.reply_every_n_messages)
+		args.actions, args.period, args.reply_every_n_messages, 
+		quotes = quotes, urls = urls)
 	echo_handler = MessageHandler(Filters.all, cb)
 
 	dispatcher.add_handler(echo_handler)
