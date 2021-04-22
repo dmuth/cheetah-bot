@@ -463,18 +463,27 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 	def echo_core(update, context):
 
 		# Set some defaults
-		text = "(No text, sticker/file/group message?)"
 		reply = ""
 
 		# Filter newlines out of our message for logging and matching purposes
 		message = update.message
+		text = ""
 		if update.message.text:
 			text = update.message.text.replace("\r", " ").replace("\n", " ")
 
-		logger.info(f"New Message: chat_id={update.effective_chat.id}, text={text[0:30]}...")
+		# How old is the message?
+		age = time.time() - message.date.timestamp()
+
+		logger.info(f"New Message: age={age:.3f}, chat_id={update.effective_chat.id}, text={text[0:30]}...")
 		#logger.info(f"Update: {update}") # Debugging
 		#logger.info(f"Message: {message}") # Debugging
 		#logger.info(f"Effective chat: {update.effective_chat}") # Debugging
+
+		# Bail if the message is too old, otherwise we risk spamming groups after a hiatus
+		if age > 10:
+			logger.info(f"Message is {age} > 10 seconds old, ignoring.")
+			return(None)
+
 
 		# Was this a bot add/remove or a DM?
 		if messageIsIgnorable(update, context, message, my_id):
