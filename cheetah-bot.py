@@ -44,11 +44,13 @@ parser.add_argument("--group_ids", type = str,
 parser.add_argument("--group_names", type = str,
 	help = "Comma-delimited group names which are matched on a substring basis.  Useful when unsure of the group ID (which can then be gotten by debug messages) Matching is done on a substring basis, so be careful!")
 parser.add_argument("--actions", type = float, default = 10,
-	help = "")
+	help = "Used for rate-limiting.  How many actions can we take in a specified period?")
 parser.add_argument("--period", type = int, default = 600,
-	help = "")
+	help = "Used for rate-limiting.  How long is our period in seconds?")
+parser.add_argument("--reply-every-n-messages", type = int, default = 100,
+	help = "Every n messages that aren't normally handled by the bot, reply to one.  Disable with -1.")
 args = parser.parse_args()
-print(args) # Debugging
+#print(args) # Debugging
 
 
 #
@@ -400,6 +402,47 @@ def getRandomMessageImage():
 	return(random.choice(replies))
 
 
+#
+# Figure out which reply function to use, get a reply, and send it off!
+#
+def sendRandomReply(bot, limiter, chat_id, message_id = None):
+
+	if random.randint(0, 1):
+		reply = getRandomMessageText()
+		sendMessage(bot, limiter, chat_id, reply = reply, message_id = message_id)
+	else:
+		reply = getRandomMessageImage()
+		sendMessage(bot, limiter, chat_id, image_url = reply, message_id = message_id)
+
+
+#
+# Keeps track of how many messages that AREN'T for the bot to follow up on are
+# sent to each group, so that we can then reply every so often.
+#
+chat_counters = {}
+
+#
+# Keep track of how many messages in each group and return if we should reply
+#
+def updateCounter(chat_id, reply_every_n) -> bool:
+
+	# If we're not using this feature, bail out
+	if reply_every_n < 0:
+		return(False)
+
+	if not chat_id in chat_counters:
+		chat_counters[chat_id] = 0
+
+	chat_counters[chat_id] += 1
+
+	if chat_counters[chat_id] >= reply_every_n:
+		logger.info(f"Counter for chat {chat_id} >= {reply_every_n}. Resetting and returning true!")
+		chat_counters[chat_id] = 0
+		return(True)
+
+	logger.info(f"Counter for chat {chat_id}: {chat_counters[chat_id]} < {reply_every_n}. No reply this time.")
+	return(False)
+
 
 #
 # This is a wrapper which returns our actual handler.
@@ -407,7 +450,7 @@ def getRandomMessageImage():
 # without having to make them globals.
 # This will make it easier to turn these functions into a class in the future.
 #
-def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, actions, period):
+def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, actions, period, reply_every_n):
 
 	#
 	# Set up our rate limiter
@@ -422,7 +465,6 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 		# Set some defaults
 		text = "(No text, sticker/file/group message?)"
 		reply = ""
-		reply_to_user = False
 
 		# Filter newlines out of our message for logging and matching purposes
 		message = update.message
@@ -451,7 +493,6 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 		#
 		if messageContainsChee(text):
 			reply = messageContainsChee(text)
-			reply_to_user = True
 			logger.info("String 'chee' detected")
 
 		#
@@ -461,14 +502,20 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 		#
 		if checkForFoulLanguage(update, text):
 			reply = checkForFoulLanguage(update, text)
-			reply_to_user = True
 			logger.info("Profanity detected")
 
 		#
 		# If the message wasn't to the bot, and we're not replying to a user, stop.
 		#
-		if not reply_to_user:
+		if not reply:
 			if not doesUserMatch(my_id, my_username, update.message, text):
+				#
+				# See if we should reply and do so.
+				#
+				should_reply = updateCounter(chat_id, reply_every_n)
+				if should_reply:
+					sendRandomReply(context.bot, limiter, chat_id, 
+						message_id = message.message_id)
 				return(None)
 
 		#
@@ -480,14 +527,9 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 			sendMessage(context.bot, limiter, chat_id, reply = reply, 
 				message_id = message.message_id)
 		else:
-			if random.randint(0, 1):
-				reply = getRandomMessageText()
-				sendMessage(context.bot, limiter, chat_id, reply = reply, 
-					message_id = message.message_id)
-			else:
-				reply = getRandomMessageImage()
-				sendMessage(context.bot, limiter, chat_id, image_url = reply, 
-					message_id = message.message_id)
+			sendRandomReply(context.bot, limiter, chat_id, 
+				message_id = message.message_id)
+
 
 	return(echo_core)
 
@@ -525,7 +567,8 @@ def main(args):
 	#
 	# We're just gonna reply to everything.
 	#
-	cb = echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, args.actions, args.period)
+	cb = echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, 
+		args.actions, args.period, args.reply_every_n_messages)
 	echo_handler = MessageHandler(Filters.all, cb)
 
 	dispatcher.add_handler(echo_handler)

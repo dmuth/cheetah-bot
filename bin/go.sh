@@ -26,6 +26,7 @@ docker run -it \
 	-e "GROUP_IDS=${GROUP_IDS}" \
 	-e "ACTIONS=${ACTIONS}" \
 	-e "PERIOD=${PERIOD}" \
+	-e "REPLY_EVERY_N_MESSAGES=${REPLY_EVERY_N_MESSAGES}" \
 	cheetah-bot $@
 
 echo "# Done!"
