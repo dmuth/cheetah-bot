@@ -1,7 +1,7 @@
 
 <img src="./img/screenshot2.png" align="right" width="300" />
 
-# Cheetah Bot
+# Cheetah Bot for Telegram
 
 This script lets you run a Telegram Bot that (semi-regularly) posts pictures of cheetahs and (semi-regularly) replies to comments as if it were a cheetah.
 
