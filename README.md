@@ -19,35 +19,54 @@ This script lets you run a Telegram Bot that (semi-regularly) posts pictures of 
 - Talk to <a href="https://t.me/BotFather">@BotFather on Telegram</a> to create a bot.
 - Copy down the API token.
 - Go to `Bot Settings -> Group Privacy` and click `Turn Off`. This will allow your bot to see messages sent to groups it is in.
+- Copy `.env-SAMPLE` to `.env` and fill out the settings.  Settings are described in detail further down.
 - Add your bot to one or more groups.  Make sure the group owners are cool with this!
 - Start the bot using one of the methods outlined below:
 
+
+### Docker Compose
+
+- Verify environment settings with with `docker-compose config`
+- `docker-compose up`
 
 ### CLI
 
 - `pip install -r ./requirements.txt`
 - `./cheetah-bot.py` - Usage arguments will be displayed.
 
+### Development mode
 
-### Docker
-
-- `cp .env-SAMPLE .env`
-- Edit .env with your token and allowed groups.
-- `./bin/go.sh`
+- `./bin/devel.sh` - This will start a Docker container with a `bash` shell.  Follow the instructions on screen to proceed.
+- `./bin/build.sh` - Build the container only.  This is called by `bin/devel.sh`.
 
 
-### Docker Compose
+## Configuration
 
-- `cp .env-SAMPLE .env`
-- Edit .env with your token and allowed groups.
-- Verify with `docker-compose config`
-- `docker-compose up`
+- `GROUP_IDS` - A comma-delimited list of group IDs where the bot should operate.
+   - If unsure of the group ID, use `GROUP_NAMES`, and the ID will show up in the logging messages from the bot.
+- `GROUP_NAMES` - A comma-delimited list of strings which are then substring matched against the name of the gorup as messages come in.  Be careful with this, because `test` will match `test`, `test2`, and `test1234`, for example.
+- `ACTIONS` - Used for rate-limiting.  How many messages can be sent in a given period?
+- `PERIOD` - Used for rate-limiting. How long is the period in seconds?
+   - Note that the queue for sending messages is refilled based on time-elapsed.
+   - For example, ACTIONS=2 and PERIOD=10 means that .2 will be added to the queue every second.
+   - So if a message is sent at second 0, the queue is now 1, at 1 second, it is 1.2, then 1.4 at 2 seconds, etc. until the queue maxes out at 2.
+- `REPLY_EVERY_N_MESSAGES` - Replies to every Nth message in the group.  100 is usually a good number.
+   - Set to -1 to disable.
+- `QUOTES_FILE` - File containing quotes.  Defaults to `./quotes.txt`
+- `URLS_FILE` - CSV File containing image URLs and comments.  Defaults to `./urls.txt`.
+   - Default images can be found Imgur: https://imgur.com/gallery/iisbC6p
 
 
-## Development
+## Copyrights
 
-- `./build.sh` - Build the Docker container with required dependencies
-- `./devel.sh` - Build the container and spawn an interactive shell
-- `./go.sh` - Used to run the container
+- The code is copyright by me, and the license is in <a href="LICENSE">LICENSE</a>.
+- The images it uses are copyright via their owners.
+
+
+## Contact
+
+My email is doug.muth@gmail.com.  I am also <a href="http://twitter.com/dmuth">@dmuth on Twitter</a> 
+and <a href="http://facebook.com/dmuth">Facebook</a>!
+
 
 

@@ -17,7 +17,7 @@ then
 	echo "# "
 	echo "# Run "
 	echo "# "
-	echo "#	${CMD} \${TOKEN} --group_names \"\${GROUP_NAMES}\" --group_ids \"\${GROUP_IDS}\" --actions \${ACTIONS} --period \${PERIOD} --reply-every-n-messages \${REPLY_EVERY_N_MESSAGES}"
+	echo "#	${CMD} \${TOKEN} --group_names \"\${GROUP_NAMES}\" --group_ids \"\${GROUP_IDS}\" --actions \${ACTIONS} --period \${PERIOD} --reply-every-n-messages \${REPLY_EVERY_N_MESSAGES} --quotes-file \${QUOTES_FILE} --urls-file \${URLS_FILE}"
 	echo "# "
 	echo "# to start the bot"
 	echo "# "
@@ -51,6 +51,9 @@ fi
 echo "# "
 echo "# Running ${CMD}..."
 echo "# "
-exec ${CMD} ${TOKEN} --group_names "${GROUP_NAMES}" --group_ids "${GROUP_IDS}" --actions ${ACTIONS} --period ${PERIOD}
+exec ${CMD} ${TOKEN} --group_names "${GROUP_NAMES}" --group_ids "${GROUP_IDS}" \
+	--actions ${ACTIONS} --period ${PERIOD} \
+	--quotes-file ${QUOTES_FILE} --urls-file ${URLS_FILE}
+
 
 

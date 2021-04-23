@@ -38,7 +38,7 @@ logger.basicConfig(level = logger.INFO,
 #
 # Parse our arguments
 #
-parser = argparse.ArgumentParser(description = "Analyze crawled text")
+parser = argparse.ArgumentParser(description = "Telegram bot to post cheetah sounds and pictures.")
 parser.add_argument("token", type = str, help = "API token")
 parser.add_argument("--group_ids", type = str,
 	help = "Comma-delimited list of group IDs where this bot can operate.  IDs must be an exact match.")
@@ -50,9 +50,9 @@ parser.add_argument("--period", type = int, default = 600,
 	help = "Used for rate-limiting.  How long is our period in seconds?")
 parser.add_argument("--reply-every-n-messages", type = int, default = 100,
 	help = "Every n messages that aren't normally handled by the bot, reply to one.  Disable with -1.")
-parser.add_argument("--quotes-file", type = str,
+parser.add_argument("--quotes-file", type = str, required = True,
 	help = "Text file that contains things the bot says, one saying per line.")
-parser.add_argument("--urls-file", type = str,
+parser.add_argument("--urls-file", type = str, required = True,
 	help = "CSV file that contains URLs of images and captions for them.")
 args = parser.parse_args()
 #print(args) # Debugging

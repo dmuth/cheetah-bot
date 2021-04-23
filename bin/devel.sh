@@ -26,6 +26,8 @@ docker run -it \
 	-e "ACTIONS=${ACTIONS}" \
 	-e "PERIOD=${PERIOD}" \
 	-e "REPLY_EVERY_N_MESSAGES=${REPLY_EVERY_N_MESSAGES}" \
+	-e "QUOTES_FILE=${QUOTES_FILE}" \
+	-e "URLS_FILE=${URLS_FILE}" \
 	cheetah-bot bash
 
 
