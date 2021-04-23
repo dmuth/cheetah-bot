@@ -1,5 +1,5 @@
 
-<img src="./img/screenshot.png" align="right" width="300" />
+<img src="./img/screenshot2.png" align="right" width="300" />
 
 # Cheetah Bot
 
