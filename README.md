@@ -31,11 +31,15 @@ This script lets you run a Telegram Bot that (semi-regularly) posts pictures of 
 
 ### CLI
 
+- `. .env` - Read the variables from our `.env file.
+- `export $(cat .env | egrep "^\w" | cut -d= -f1)` - Mark those varaibles as exportable.
 - `pip install -r ./requirements.txt`
 - `./cheetah-bot.py` - Usage arguments will be displayed.
 
 ### Development mode
 
+- `. .env` - Read the variables from our `.env file.
+- `export $(cat .env | egrep "^\w" | cut -d= -f1)` - Mark those varaibles as exportable.
 - `./bin/devel.sh` - This will start a Docker container with a `bash` shell.  Follow the instructions on screen to proceed.
 - `./bin/build.sh` - Build the container only.  This is called by `bin/devel.sh`.
 
@@ -55,6 +59,21 @@ This script lets you run a Telegram Bot that (semi-regularly) posts pictures of 
 - `QUOTES_FILE` - File containing quotes.  Defaults to `./quotes.txt`
 - `IMAGES_FILE` - CSV File containing image images and comments.  Defaults to `./urls.txt`.
    - Default images can be found Imgur: https://imgur.com/gallery/iisbC6p
+
+
+## Good Testing Practices
+
+I'm not even sure how to unit test against Telegram, so I have manual instructions here for now:
+
+- Start the bot with default settings, except for `REPLY_EVERY_N_MESSAGES`, which should be 2.
+- Send 2 test messages to the group, ensure the bot replies to the second message.
+- Type `chee` and ensure the bot replies.
+- Type an f-bomb in a message and make sure the bot catches that.
+- Type a message with the bot tagged in it and ensure it replies
+   - Repeat a few times to make sure it does text AND images
+- Reply to a message from the bot in the gorup and ensure it replies
+   - Repeat a few times to make sure it does text AND images
+- Finally, send a DM to the bot and make sure it replies.
 
 
 ## Copyrights
