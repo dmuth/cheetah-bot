@@ -66,7 +66,10 @@ This script lets you run a Telegram Bot that (semi-regularly) posts pictures of 
 
 I'm not even sure how to unit test against Telegram, so I have manual instructions here for now:
 
-- Start the bot with default settings, except for `REPLY_EVERY_N_MESSAGES`, which should be 2.
+- Start the bot with default settings, except for... 
+   - `REPLY_EVERY_N_MESSAGES`, which should be 2.
+   - `ACTIONS` should be 2.
+   - `PERIOD` should be 10.
 - Send 2 test messages to the group, ensure the bot replies to the second message.
 - Type `chee` and ensure the bot replies.
 - Type an f-bomb in a message and make sure the bot catches that.
@@ -74,6 +77,7 @@ I'm not even sure how to unit test against Telegram, so I have manual instructio
    - Repeat a few times to make sure it does text AND images
 - Reply to a message from the bot in the gorup and ensure it replies
    - Repeat a few times to make sure it does text AND images
+- Spam the bot with messages until you exhaust the quota (it won't take long with these settings) and make sure it goes to sleep than wakes back up.
 - Finally, send a DM to the bot and make sure it replies.
 
 
