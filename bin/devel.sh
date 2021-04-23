@@ -27,7 +27,7 @@ docker run -it \
 	-e "PERIOD=${PERIOD}" \
 	-e "REPLY_EVERY_N_MESSAGES=${REPLY_EVERY_N_MESSAGES}" \
 	-e "QUOTES_FILE=${QUOTES_FILE}" \
-	-e "URLS_FILE=${URLS_FILE}" \
+	-e "IMAGES_FILE=${IMAGES_FILE}" \
 	cheetah-bot bash
 
 

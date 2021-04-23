@@ -53,7 +53,7 @@ This script lets you run a Telegram Bot that (semi-regularly) posts pictures of 
 - `REPLY_EVERY_N_MESSAGES` - Replies to every Nth message in the group.  100 is usually a good number.
    - Set to -1 to disable.
 - `QUOTES_FILE` - File containing quotes.  Defaults to `./quotes.txt`
-- `URLS_FILE` - CSV File containing image URLs and comments.  Defaults to `./urls.txt`.
+- `IMAGES_FILE` - CSV File containing image images and comments.  Defaults to `./urls.txt`.
    - Default images can be found Imgur: https://imgur.com/gallery/iisbC6p
 
 

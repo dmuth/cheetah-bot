@@ -52,7 +52,7 @@ parser.add_argument("--reply-every-n-messages", type = int, default = 100,
 	help = "Every n messages that aren't normally handled by the bot, reply to one.  Disable with -1.")
 parser.add_argument("--quotes-file", type = str, required = True,
 	help = "Text file that contains things the bot says, one saying per line.")
-parser.add_argument("--urls-file", type = str, required = True,
+parser.add_argument("--images-file", type = str, required = True,
 	help = "CSV file that contains URLs of images and captions for them.")
 args = parser.parse_args()
 #print(args) # Debugging
@@ -379,13 +379,13 @@ def getRandomMessageImage(replies):
 #
 # Figure out which reply function to use, get a reply, and send it off!
 #
-def sendRandomReply(bot, limiter, chat_id, message_id, quotes, urls):
+def sendRandomReply(bot, limiter, chat_id, message_id, quotes, images):
 
 	if random.randint(0, 1):
 		reply = getRandomMessageText(quotes)
 		sendMessage(bot, limiter, chat_id, reply = reply, message_id = message_id)
 	else:
-		reply = getRandomMessageImage(urls)
+		reply = getRandomMessageImage(images)
 		sendMessage(bot, limiter, chat_id, image_url = reply["url"], caption = reply["caption"],
 			message_id = message_id)
 
@@ -426,7 +426,7 @@ def updateCounter(chat_id, reply_every_n) -> bool:
 # This will make it easier to turn these functions into a class in the future.
 #
 def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, actions, period, reply_every_n,
-	quotes, urls):
+	quotes, images):
 
 	#
 	# Set up our rate limiter
@@ -501,7 +501,7 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 				if should_reply:
 					sendRandomReply(context.bot, limiter, chat_id, 
 						message_id = message.message_id,
-						quotes = quotes, urls = urls)
+						quotes = quotes, images = images)
 				return(None)
 
 		#
@@ -511,12 +511,11 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 		#
 		if reply:
 			sendMessage(context.bot, limiter, chat_id, reply = reply, 
-				message_id = message.message_id,
-				quotes = quotes, urls = urls)
+				message_id = message.message_id)
 		else:
 			sendRandomReply(context.bot, limiter, chat_id, 
 				message_id = message.message_id,
-				quotes = quotes, urls = urls)
+				quotes = quotes, images = images)
 
 
 	return(echo_core)
@@ -541,29 +540,29 @@ def readQuotes(quotes_file) -> list:
 #
 # Read our list of URLs and return them and their captions in a list.
 #
-def readUrls(urls_file) -> list:
+def readUrls(images_file) -> list:
 
 	#
 	# Read our URLs and captions for them.
 	# 
-	urls_file = pathlib.Path.cwd() / args.urls_file
-	if not urls_file.exists():
-		raise Exception(f"URLs file {urls_file} does not exist!")
-	if not urls_file.is_file():
-		raise Exception(f"URLs file {urls_file} exists but is not a file!")
-	urls_file_contents = urls_file.read_text()
+	images_file = pathlib.Path.cwd() / args.images_file
+	if not images_file.exists():
+		raise Exception(f"URLs file {images_file} does not exist!")
+	if not images_file.is_file():
+		raise Exception(f"URLs file {images_file} exists but is not a file!")
+	images_file_contents = images_file.read_text()
 
 	#
 	# Separate the URL from the (optional) caption.
 	#
-	urls = []
-	for line in urls_file_contents.splitlines():
+	images = []
+	for line in images_file_contents.splitlines():
 		fields = line.split(",", 1)
 		if fields[0] == "url":
 			continue
-		urls.append(fields)
+		images.append(fields)
 
-	return(urls)
+	return(images)
 
 
 #
@@ -574,7 +573,7 @@ def main(args):
 	print(args)
 
 	quotes = readQuotes(args.quotes_file)
-	urls = readUrls(args.urls_file)
+	images = readUrls(args.images_file)
 
 	bot = telegram.Bot(token = args.token)
 	logger.info(f"Successfully authenticated! {bot.get_me()}")
@@ -606,7 +605,7 @@ def main(args):
 	#
 	cb = echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, 
 		args.actions, args.period, args.reply_every_n_messages, 
-		quotes = quotes, urls = urls)
+		quotes = quotes, images = images)
 	echo_handler = MessageHandler(Filters.all, cb)
 
 	dispatcher.add_handler(echo_handler)
