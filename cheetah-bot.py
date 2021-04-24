@@ -310,9 +310,9 @@ def wakeUp(bot, limiter, chat_id):
 
 	global was_fully_awake
 
-	logger.info(f"Thread: Firing callback! quota_left={limiter.getQuota():.3f}")
+	logger.info(f"Thread: Firing callback! chat_id={chat_id} quota_left={limiter.getQuota():.3f}")
 	if limiter.isQuotaFull():
-		logger.info("Thread: Queue is full, sending a message to the channel!")
+		logger.info(f"Thread: Queue is full, sending a message to the channel! chat_id={chat_id}")
 		bot.send_message(chat_id = chat_id, text = "I'm back and fully rested!  Did ya miss chee?")
 		was_fully_awake = True
 
@@ -420,6 +420,22 @@ def updateCounter(chat_id, reply_every_n) -> bool:
 
 
 #
+# Dictionary of limiters for each chat ID
+#
+limiters = {}
+
+#
+# Create the rate limiter for the current group, then return it.
+#
+def getRateLimiter(chat_id, actions, period):
+
+	if not chat_id in limiters:
+		limiters[chat_id] = rate_limiter.Limiter(actions = actions, period = period)
+		
+	return(limiters[chat_id])
+
+
+#
 # This is a wrapper which returns our actual handler.
 # The reason for this is so that the variables we need can be in-scope, 
 # without having to make them globals.
@@ -427,11 +443,6 @@ def updateCounter(chat_id, reply_every_n) -> bool:
 #
 def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, actions, period, reply_every_n,
 	quotes, images):
-
-	#
-	# Set up our rate limiter
-	#
-	limiter = rate_limiter.Limiter(actions = actions, period = period)
 
 	#
 	# Our handler that is fired when a message comes in
@@ -488,6 +499,11 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 		if checkForFoulLanguage(update, text):
 			reply = checkForFoulLanguage(update, text)
 			logger.info("Profanity detected")
+
+		#
+		# Get our rate limiter for this chat
+		# 
+		limiter = getRateLimiter(chat_id, actions, period)
 
 		#
 		# If the message wasn't to the bot, and we're not replying to a user, stop.
