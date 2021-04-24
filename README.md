@@ -80,6 +80,12 @@ I'm not even sure how to unit test against Telegram, so I have manual instructio
 - Spam the bot with messages until you exhaust the quota (it won't take long with these settings) and make sure it goes to sleep than wakes back up.
 - Finally, send a DM to the bot and make sure it replies.
 
+## Future Features to add
+
+- [ ] Private messages to bot should return a URL for the GitHub
+- [ ] Ability for group admins to configure limits on bot
+- [ ] Ability for bot to join any group
+
 
 ## Copyrights
 
