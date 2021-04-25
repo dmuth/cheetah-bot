@@ -8,7 +8,7 @@ set -e
 
 
 # Our command to run
-CMD="/mnt/cheetah-bot.py"
+CMD="/mnt/bin/run-bot.sh"
 
 if test "$1"
 then
@@ -17,9 +17,11 @@ then
 	echo "# "
 	echo "# Run "
 	echo "# "
-	echo "#	${CMD} \${TOKEN} --group_names \"\${GROUP_NAMES}\" --group_ids \"\${GROUP_IDS}\" --actions \${ACTIONS} --period \${PERIOD} --reply-every-n-messages \${REPLY_EVERY_N_MESSAGES} --quotes-file \${QUOTES_FILE} --images-file \${IMAGES_FILE}"
+	echo "# ${CMD}"
 	echo "# "
 	echo "# to start the bot"
+	echo "# "
+	echo "# Environment variables will be printed as confirmation."
 	echo "# "
 	exec $@
 fi
