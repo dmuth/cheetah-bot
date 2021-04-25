@@ -6,7 +6,7 @@ FROM python:3
 
 WORKDIR /mnt
 
-COPY * .
+COPY . .
 
 COPY bin/entrypoint.sh /
 
