@@ -12,3 +12,6 @@ __pycache__
 # Steve Jobs
 .DS_Store
 
+# mitmproxy CA cert
+mitmproxy-ca-cert.pem
+

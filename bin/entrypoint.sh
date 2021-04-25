@@ -17,11 +17,16 @@ then
 	echo "# "
 	echo "# Run "
 	echo "# "
-	echo "# ${CMD}"
+	echo "#	${CMD}"
 	echo "# "
 	echo "# to start the bot"
 	echo "# "
 	echo "# Environment variables will be printed as confirmation."
+	echo "# "
+	echo "# If you are running mitmproxy on the host machine, run this to import the mitm CA: "
+	echo "# "
+	echo "#	./bin/import-mitmproxy-cert.py"
+	echo "# "
 	echo "# "
 	exec $@
 fi

@@ -13,6 +13,7 @@ This script lets you run a Telegram Bot that (semi-regularly) posts pictures of 
 - Will only interact with allowlisted groups/group IDs.
 - Configurable rate limiting to prevent accidental flooding of the group.
 - Age checking on messages to prevent spamming the group after a hiatus.
+- Support for talking to <a href="https://mitmproxy.org/">mitmproxy</a>, if you'd like to monitor network activity.
 
 
 ## Usage
@@ -42,6 +43,8 @@ This script lets you run a Telegram Bot that (semi-regularly) posts pictures of 
 - `. .env` - Read the variables from our `.env file.
 - `export $(cat .env | egrep "^\w" | cut -d= -f1)` - Mark those varaibles as exportable.
 - `./bin/devel.sh` - This will start a Docker container with a `bash` shell.  Follow the instructions on screen to proceed.
+   - `./bin/run-bot.sh` - Meant to be run inside of a `bash` shell spawned by `devel.sh`, this will print the environment variables you're using before running the bot and give you a chance to change them.
+   - `./bin/import-mitmproxy-cert.py` - Run this inside of a `bash shell spawned by `devel.sh` to import the mitmproxy root certificate.
 - `./bin/build.sh` - Build the container only.  This is called by `bin/devel.sh`.
 
 
@@ -80,11 +83,33 @@ I'm not even sure how to unit test against Telegram, so I have manual instructio
 - Spam the bot with messages until you exhaust the quota (it won't take long with these settings) and make sure it goes to sleep than wakes back up.
 - Finally, send a DM to the bot and make sure it replies.
 
+
+## Mitmproxy Support
+
+If you'd like to send traffic through `mitmproxy` for testing, here's how to make that happen: 
+
+- Make sure `mitmproxy` is installed
+- Edit `.env` and set the `HTTP_PROXY` and `HTTPS_PROXY` values to `http://YOUR_IP:8080/`
+   - Note that `YOUR_IP` is NEITHER localhost NOR 127.0.0.1.  It must be the local network IP of your machine, since localhost would be just the Docker container.
+- Copy the CA for mitmproxy to this directory: `cp ~/.mitmproxy/mitmproxy-ca-cert.pem .`
+   - If this fails, try running `mitmproxy` once
+- Start the Docker container in devel mode: `./bin/devel.sh`
+- Run the script `./bin/import-mitmproxy-cert.py` inside the shell to ingest the CA for mitmproxy.
+   - If this is not done, you'll see a `certificate verify failed` error and the bot will not run.
+- Make sure `mitmproxy`, `mitmdump`, or `mitmweb` is running on the host machine.
+   - If it's not running, you'll see a `Connection refused` error and the bot will not run.
+
+
 ## Future Features to add
 
 - [ ] Private messages to bot should return a URL for the GitHub
 - [ ] Ability for group admins to configure limits on bot
 - [ ] Ability for bot to join any group
+
+
+## Credits
+
+- Jan De Dobbeleer for <a href="./bin/import-mitmproxy-cert.py">his excellent post</a> on how to talk to mitmproxy from a Python app in a Docker container.
 
 
 ## Copyrights
