@@ -13,11 +13,6 @@ pushd $(dirname $0) > /dev/null
 cd ..
 
 #
-# Build our container
-#
-./bin/build.sh
-
-#
 # Run our Docker container with any arguments that were passed in
 #
 docker run -it \

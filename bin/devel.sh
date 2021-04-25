@@ -18,16 +18,5 @@ cd ..
 #
 # Run the container with a spawned bash shell
 #
-docker run -it \
-	-v $(pwd):/mnt \
-	-e "TOKEN=${TOKEN}" \
-	-e "GROUP_NAMES=${GROUP_NAMES}" \
-	-e "GROUP_IDS=${GROUP_IDS}" \
-	-e "ACTIONS=${ACTIONS}" \
-	-e "PERIOD=${PERIOD}" \
-	-e "REPLY_EVERY_N_MESSAGES=${REPLY_EVERY_N_MESSAGES}" \
-	-e "QUOTES_FILE=${QUOTES_FILE}" \
-	-e "IMAGES_FILE=${IMAGES_FILE}" \
-	cheetah-bot bash
-
+./bin/go.sh bash
 
