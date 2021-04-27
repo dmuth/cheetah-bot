@@ -23,7 +23,10 @@ from telegram.ext import Updater
 from telegram.ext import CallbackContext
 from telegram.ext import CommandHandler, MessageHandler, Filters
 
-import rate_limiter
+import match
+#from lib import match
+from lib.match import Match
+from lib import rate_limiter
 
 
 #
@@ -98,64 +101,6 @@ def start(update, context):
 	logger.info(f"chat_id: {update.effective_chat.id}, text={text}")
 	context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
 
-
-#
-# Is the group ID from the message present in the allowed list?
-#
-def doesGroupIdMatch(groups, group_id):
-
-	if groups:
-		for id in groups:
-			if id == str(group_id):
-				return(True)
-	return(False)
-
-
-#
-# Is the group name from the message present in the allowed list?
-#
-def doesGroupNameMatch(groups, group_name):
-	if groups:
-		for name in groups:
-			if name.lower() in group_name.lower():
-				return(True)
-	return(False)
-
-
-def doesGroupMatch(group_ids, group_names, chat_id, chat_name):
-
-	if not doesGroupIdMatch(group_ids, chat_id):
-		logger.info(f"Chat id '{chat_id}' not found in allowlist, trying chat title...")
-
-		if not doesGroupNameMatch(group_names, chat_name):
-			logger.info(f"Chat title '{chat_name}' not found in allowlist, stopping here!")
-			return(None)
-		else:
-			logger.info(f"Chat title '{chat_name}' found in allowlist, continuing!")
-
-	else:
-		logger.info(f"Chat id {chat_id} found in allow list, continuing!")
-
-	return(True)
-
-
-#
-# Was this message to me, or a reply to me?
-#
-def doesUserMatch(my_id, my_username, message, text):
-
-	reply_to = message.reply_to_message
-
-	if reply_to:
-		if my_id == reply_to.from_user.id:
-			logger.info("This reply was to me!")
-			return(True)
-		
-	if my_username in text:
-		logger.info("This message was to me!")
-		return(True)
-
-	return(False)
 
 #
 # Update our response if there is foul language in the text 
@@ -444,6 +389,8 @@ def getRateLimiter(chat_id, actions, period):
 def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, actions, period, reply_every_n,
 	quotes, images):
 
+	match = Match()
+
 	#
 	# Our handler that is fired when a message comes in
 	#
@@ -481,7 +428,7 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 		#
 		chat_id = update.effective_chat.id
 		chat_name = update.effective_chat.title
-		if not doesGroupMatch(allowed_group_ids, allowed_group_names, chat_id, chat_name):
+		if not match.doesGroupMatch(allowed_group_ids, allowed_group_names, chat_id, chat_name):
 			return(None)
 
 		#
@@ -509,7 +456,7 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 		# If the message wasn't to the bot, and we're not replying to a user, stop.
 		#
 		if not reply:
-			if not doesUserMatch(my_id, my_username, update.message, text):
+			if not match.doesUserMatch(my_id, my_username, update.message, text):
 				#
 				# See if we should reply and do so.
 				#
