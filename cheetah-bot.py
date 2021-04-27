@@ -26,7 +26,7 @@ from telegram.ext import CommandHandler, MessageHandler, Filters
 import match
 #from lib import match
 from lib.match import Match
-from lib import rate_limiter
+from lib.limiter import Limiter
 
 
 #
@@ -297,7 +297,7 @@ def sendMessage(bot, limiter, chat_id, reply = None, image_url = None, caption =
 			goToSleep(bot, limiter, chat_id)
 
 	else:
-		logger.info("Not sending message, quota currently exhausted.")
+		logger.info(f"Not sending message, quota currently exhausted. quota_left={limiter.getQuota():.3f}")
 
 
 #
@@ -375,7 +375,7 @@ limiters = {}
 def getRateLimiter(chat_id, actions, period):
 
 	if not chat_id in limiters:
-		limiters[chat_id] = rate_limiter.Limiter(actions = actions, period = period)
+		limiters[chat_id] = Limiter(actions = actions, period = period)
 		
 	return(limiters[chat_id])
 
