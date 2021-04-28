@@ -16,14 +16,22 @@ class Filter():
 
 
 	#
+	# Check to see if a user is me
+	#
+	def userIsMe(self, user, my_id):
+
+		if user.id == my_id:
+			return(True)
+
+		return(False)
+
+
+	#
 	# Print out a log message
 	#
-	def messageIsDm(self, update, context):
+	def messageIsDm(self, update):
 
 		if not update.effective_chat.title:
-			logger.info("This is a DM, bailing out (for now...)")
-			text = "You must message me in an approved group."
-			context.bot.send_message(chat_id = update.effective_chat.id, text = text)
 			return(True)
 
 		return(False)
@@ -32,7 +40,7 @@ class Filter():
 	#
 	# If the message one we can ignore?
 	#
-	def messageIsIgnorable(self, update, context, message, my_id):
+	def messageIsIgnorable(self, update, message, my_id):
 
 		chat_id = update.effective_chat.id
 		chat_name = update.effective_chat.title
@@ -45,8 +53,11 @@ class Filter():
 			logger.info(f"I was removed from the chat '{chat_name}' ({chat_id})")
 			return(True)
 
-		if self.messageIsDm(update, context):
-			return(True)
+		if message.new_chat_members:
+			logger.info("A member was added to chat, ignoring...")
+
+		if message.left_chat_member:
+			logger.info("A member was removed from chat, ignoring...")
 
 		return(False)
 
@@ -58,7 +69,7 @@ class Filter():
 
 		if message.new_chat_members:
 			for user in message.new_chat_members:
-				if userIsMe(user, my_id):
+				if self.userIsMe(user, my_id):
 					return(True)
 
 		return(False)
@@ -70,7 +81,7 @@ class Filter():
 	def botWasRemovedFromGroup(self, update, message, my_id):
 
 		if message.left_chat_member:
-			if userIsMe(message.left_chat_member, my_id):
+			if self.userIsMe(message.left_chat_member, my_id):
 				return(True)
 
 		return(False)

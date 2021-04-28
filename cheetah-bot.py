@@ -122,19 +122,6 @@ def messageContainsChee(text):
 
 
 #
-# Check to see if a user is me
-#
-def userIsMe(user, my_id):
-
-	if user.id == my_id:
-		return(True)
-
-	return(False)
-
-
-
-
-#
 # This flag is set when the bot reaches a fully awake state (aka the queue is full)
 # Going to sleep sets this to false, the queue being full again sets this to true.
 # The reason behind this flag is so that sleep and wake messages are only printed ONCE
@@ -340,8 +327,15 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 			return(None)
 
 
-		# Was this a bot add/remove or a DM?
-		if filter.messageIsIgnorable(update, context, message, my_id):
+		# Was this a bot add/remove?
+		if filter.messageIsIgnorable(update, message, my_id):
+			return(None)
+
+		# Was this a DM?
+		if filter.messageIsDm(update):
+			logger.info("This is a DM, bailing out (for now...)")
+			text = "You must message me in an approved group."
+			context.bot.send_message(chat_id = update.effective_chat.id, text = text)
 			return(None)
 
 		#
