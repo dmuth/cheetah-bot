@@ -1,4 +1,7 @@
 
+#
+# This file holds profanity-related filters/responses.
+#
 import logging
 import re
 

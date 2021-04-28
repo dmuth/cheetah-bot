@@ -26,6 +26,7 @@ from telegram.ext import CommandHandler, MessageHandler, Filters
 import match
 from lib.match import Match
 from lib.limiter import Limiter
+from lib.filter.filter import Filter
 from lib.filter.profanity import Profanity
 
 
@@ -131,65 +132,6 @@ def userIsMe(user, my_id):
 	return(False)
 
 
-#
-# Was this bot just added to a group?
-# 
-def botWasAddedToGroup(update, message, my_id):
-
-	if message.new_chat_members:
-		for user in message.new_chat_members:
-			if userIsMe(user, my_id):
-				return(True)
-
-	return(False)
-
-
-#
-# Was this bot just removed from a group?
-#
-def botWasRemovedFromGroup(update, message, my_id):
-
-	if message.left_chat_member:
-		if userIsMe(message.left_chat_member, my_id):
-			return(True)
-
-	return(False)
-
-
-#
-# Print out a log message
-#
-def messageIsDm(update, context):
-
-	if not update.effective_chat.title:
-		logger.info("This is a DM, bailing out (for now...)")
-		text = "You must message me in an approved group."
-		context.bot.send_message(chat_id = update.effective_chat.id, text = text)
-		return(True)
-
-	return(False)
-
-
-#
-# If the message one we can ignore?
-#
-def messageIsIgnorable(update, context, message, my_id):
-
-	chat_id = update.effective_chat.id
-	chat_name = update.effective_chat.title
-
-	if botWasAddedToGroup(update, message, my_id):
-		logger.info(f"I was added to the chat '{chat_name}' ({chat_id})!")
-		return(True)
-
-	if botWasRemovedFromGroup(update, message, my_id):
-		logger.info(f"I was removed from the chat '{chat_name}' ({chat_id})")
-		return(True)
-
-	if messageIsDm(update, context):
-		return(True)
-
-	return(False)
 
 
 #
@@ -366,6 +308,7 @@ def getRateLimiter(chat_id, actions, period):
 def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, actions, period, reply_every_n,
 	quotes, images):
 
+	filter = Filter()
 	match = Match()
 	profanity = Profanity()
 
@@ -398,7 +341,7 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 
 
 		# Was this a bot add/remove or a DM?
-		if messageIsIgnorable(update, context, message, my_id):
+		if filter.messageIsIgnorable(update, context, message, my_id):
 			return(None)
 
 		#
