@@ -24,9 +24,9 @@ from telegram.ext import CallbackContext
 from telegram.ext import CommandHandler, MessageHandler, Filters
 
 import match
-#from lib import match
 from lib.match import Match
 from lib.limiter import Limiter
+from lib.filter.profanity import Profanity
 
 
 #
@@ -100,29 +100,6 @@ def getAllowedIds(group_ids):
 def start(update, context):
 	logger.info(f"chat_id: {update.effective_chat.id}, text={text}")
 	context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
-
-
-#
-# Update our response if there is foul language in the text 
-# If not, just return the original reply.
-#
-def checkForFoulLanguage(update, text):
-
-	if re.search(r"fuck", text, re.IGNORECASE):
-		return("Such language!")
-	if re.search(r"dammit", text, re.IGNORECASE):
-		return("My virgin ears!")
-	if re.search(r"sanic\b", text, re.IGNORECASE):
-		return("Gotta go fast.")
-	if re.search(r"shit\b", text, re.IGNORECASE):
-		return("My virgin ears!")
-	elif "🖕" in text:
-		return("My virgin eyes!")
-	elif (update.message.sticker
-		and "🖕" in update.message.sticker.emoji):
-		return("My virgin eyes!")
-	else:
-		return(None)
 
 
 #
@@ -390,6 +367,7 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 	quotes, images):
 
 	match = Match()
+	profanity = Profanity()
 
 	#
 	# Our handler that is fired when a message comes in
@@ -443,8 +421,8 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 		# doesn't let me do "if (value = func())" syntax like other languages do.
 		# Once this goes into a class, I can have the function just set a classwide value instead.
 		#
-		if checkForFoulLanguage(update, text):
-			reply = checkForFoulLanguage(update, text)
+		if profanity.hasFoulLanguage(update, text):
+			reply = profanity.getReply()
 			logger.info("Profanity detected")
 
 		#
