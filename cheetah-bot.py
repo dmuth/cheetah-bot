@@ -12,7 +12,6 @@ import random
 import re
 import sys
 import time
-import threading
 import traceback
 sys.path.append("lib")
 
@@ -29,6 +28,7 @@ from lib.filter.profanity import Profanity
 from lib.match import Match
 from lib.rate_limiters import RateLimiters
 from lib.replies import Replies
+from lib.sleep_wake import SleepWake
 
 
 #
@@ -105,56 +105,9 @@ def start(update, context):
 
 
 #
-# This flag is set when the bot reaches a fully awake state (aka the queue is full)
-# Going to sleep sets this to false, the queue being full again sets this to true.
-# The reason behind this flag is so that sleep and wake messages are only printed ONCE
-# at each extreme, instead of all the time of the bot sees regular traffic that keeps
-# its queue partially filled.
-#
-# I hate that this is global.  When this bot is converted to a class, this will be addressed.
-#
-was_fully_awake = True
-
-
-#
-# Our queue is exhausted so we're going to tweak the was_fully_awake flag,
-# print a sleep message (if was_fully_awake was full), and schedule a callback
-# for when the bot should be fully awake.
-#
-def goToSleep(bot, limiter, chat_id):
-
-	global was_fully_awake
-
-	if was_fully_awake:
-		bot.send_message(chat_id = chat_id, text = "I feel asleep.")
-
-	was_fully_awake = False
-
-	threading.Timer(limiter.getTimeUntilQuotaFull(), 
-		wakeUp, args = (bot, limiter, chat_id,)).start()
-
-
-#
-# Fired $period seconds after the queue was last empty and the bot went to sleep.
-# This will check to see if the queue is actually full, as the bot may have been pinged a few
-# times while the queue refilled.  As such, the announcement will go out only if the 
-# bot is "fully rested" aka has a full queue.
-#
-def wakeUp(bot, limiter, chat_id):
-
-	global was_fully_awake
-
-	logger.info(f"Thread: Firing callback! chat_id={chat_id} quota_left={limiter.getQuota():.3f}")
-	if limiter.isQuotaFull():
-		logger.info(f"Thread: Queue is full, sending a message to the channel! chat_id={chat_id}")
-		bot.send_message(chat_id = chat_id, text = "I'm back and fully rested!  Did ya miss chee?")
-		was_fully_awake = True
-
-
-#
 # Send a message in a way that honors our rate limiter's quota.
 #
-def sendMessage(bot, limiter, chat_id, reply = None, image_url = None, caption = None, message_id = None):
+def sendMessage(bot, limiter, sleep_wake, chat_id, reply = None, image_url = None, caption = None, message_id = None):
 
 	if limiter.action():
 
@@ -183,7 +136,7 @@ def sendMessage(bot, limiter, chat_id, reply = None, image_url = None, caption =
 		# Yes, this will only work with one group, even if we are listening in multiple groups.
 		#
 		if limiter.isQuotaExhausted():
-			goToSleep(bot, limiter, chat_id)
+			sleep_wake.goToSleep(bot, limiter, chat_id)
 
 	else:
 		logger.info(f"Not sending message, quota currently exhausted. quota_left={limiter.getQuota():.3f}")
@@ -193,14 +146,14 @@ def sendMessage(bot, limiter, chat_id, reply = None, image_url = None, caption =
 #
 # Figure out which reply function to use, get a reply, and send it off!
 #
-def sendRandomReply(bot, limiter, replies, chat_id, message_id):
+def sendRandomReply(bot, limiter, sleep_wake, replies, chat_id, message_id):
 
 	if random.randint(0, 1):
 		reply = replies.getRandomMessageText()
-		sendMessage(bot, limiter, chat_id, reply = reply, message_id = message_id)
+		sendMessage(bot, limiter, sleep_wake, chat_id, reply = reply, message_id = message_id)
 	else:
 		reply = replies.getRandomMessageImage()
-		sendMessage(bot, limiter, chat_id, image_url = reply["url"], caption = reply["caption"],
+		sendMessage(bot, limiter, sleep_wake, chat_id, image_url = reply["url"], caption = reply["caption"],
 			message_id = message_id)
 
 
@@ -218,6 +171,7 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 	match = Match()
 	profanity = Profanity()
 	rate_limiters = RateLimiters(actions, period)
+	sleep_wake = SleepWake()
 
 
 	#
@@ -298,7 +252,7 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 				#
 				should_reply = counters.update(chat_id)
 				if should_reply:
-					sendRandomReply(context.bot, limiter, replies, chat_id,
+					sendRandomReply(context.bot, limiter, sleep_wake, replies, chat_id,
 						message_id = message.message_id)
 				return(None)
 
@@ -308,10 +262,10 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 		# grab a random string of text or URL.
 		#
 		if reply:
-			sendMessage(context.bot, limiter, chat_id, reply = reply, 
+			sendMessage(context.bot, limiter, sleep_wake, chat_id, reply = reply, 
 				message_id = message.message_id)
 		else:
-			sendRandomReply(context.bot, limiter, replies, chat_id, 
+			sendRandomReply(context.bot, limiter, sleep_wake, replies, chat_id, 
 				message_id = message.message_id)
 
 
