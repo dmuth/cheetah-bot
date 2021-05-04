@@ -10,7 +10,6 @@ import json
 import logging
 import random
 import re
-import pathlib
 import sys
 import time
 import threading
@@ -26,6 +25,7 @@ from telegram.ext import CommandHandler, MessageHandler, Filters
 import match
 from lib.match import Match
 from lib.limiter import Limiter
+from lib.replies import Replies
 from lib.filter.filter import Filter
 from lib.filter.profanity import Profanity
 
@@ -206,37 +206,17 @@ def sendMessage(bot, limiter, chat_id, reply = None, image_url = None, caption =
 		logger.info(f"Not sending message, quota currently exhausted. quota_left={limiter.getQuota():.3f}")
 
 
-#
-# Return a random cheetah noise.
-#
-def getRandomMessageText(replies):
-	return(random.choice(replies))
-
-
-#
-# Return a random image URL and its caption
-#
-def getRandomMessageImage(replies):
-
-	retval = {}
-
-	reply = random.choice(replies)
-	retval["url"] = reply[0]
-	retval["caption"] = reply[1] + "\n\n" + reply[0]
-
-	return(retval)
-
 
 #
 # Figure out which reply function to use, get a reply, and send it off!
 #
-def sendRandomReply(bot, limiter, chat_id, message_id, quotes, images):
+def sendRandomReply(bot, limiter, replies, chat_id, message_id):
 
 	if random.randint(0, 1):
-		reply = getRandomMessageText(quotes)
+		reply = replies.getRandomMessageText()
 		sendMessage(bot, limiter, chat_id, reply = reply, message_id = message_id)
 	else:
-		reply = getRandomMessageImage(images)
+		reply = replies.getRandomMessageImage()
 		sendMessage(bot, limiter, chat_id, image_url = reply["url"], caption = reply["caption"],
 			message_id = message_id)
 
@@ -293,7 +273,7 @@ def getRateLimiter(chat_id, actions, period):
 # This will make it easier to turn these functions into a class in the future.
 #
 def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, actions, period, reply_every_n,
-	quotes, images):
+	replies):
 
 	filter = Filter()
 	match = Match()
@@ -377,9 +357,8 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 				#
 				should_reply = updateCounter(chat_id, reply_every_n)
 				if should_reply:
-					sendRandomReply(context.bot, limiter, chat_id, 
-						message_id = message.message_id,
-						quotes = quotes, images = images)
+					sendRandomReply(context.bot, limiter, replies, chat_id,
+						message_id = message.message_id)
 				return(None)
 
 		#
@@ -391,56 +370,12 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 			sendMessage(context.bot, limiter, chat_id, reply = reply, 
 				message_id = message.message_id)
 		else:
-			sendRandomReply(context.bot, limiter, chat_id, 
-				message_id = message.message_id,
-				quotes = quotes, images = images)
+			sendRandomReply(context.bot, limiter, replies, chat_id, 
+				message_id = message.message_id)
 
 
 	return(echo_core)
 
-
-#
-# Read our quotes and return them in a list
-#
-def readQuotes(quotes_file) -> list:
-
-	quotes = pathlib.Path.cwd() / quotes_file
-	if not quotes.exists():
-		raise Exception(f"Quotes file {quotes} does not exist!")
-	if not quotes.is_file():
-		raise Exception(f"Quotes file {quotes} exists but is not a file!")
-	quotes = quotes.read_text()
-	quotes = quotes.splitlines()
-
-	return(quotes)
-
-
-#
-# Read our list of URLs and return them and their captions in a list.
-#
-def readUrls(images_file) -> list:
-
-	#
-	# Read our URLs and captions for them.
-	# 
-	images_file = pathlib.Path.cwd() / args.images_file
-	if not images_file.exists():
-		raise Exception(f"URLs file {images_file} does not exist!")
-	if not images_file.is_file():
-		raise Exception(f"URLs file {images_file} exists but is not a file!")
-	images_file_contents = images_file.read_text()
-
-	#
-	# Separate the URL from the (optional) caption.
-	#
-	images = []
-	for line in images_file_contents.splitlines():
-		fields = line.split(",", 1)
-		if fields[0] == "url":
-			continue
-		images.append(fields)
-
-	return(images)
 
 
 #
@@ -450,8 +385,7 @@ def main(args):
 
 	print(args)
 
-	quotes = readQuotes(args.quotes_file)
-	images = readUrls(args.images_file)
+	replies = Replies(args.quotes_file, args.images_file)
 
 	bot = telegram.Bot(token = args.token)
 	logger.info(f"Successfully authenticated! {bot.get_me()}")
@@ -482,8 +416,7 @@ def main(args):
 	# We're just gonna reply to everything.
 	#
 	cb = echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, 
-		args.actions, args.period, args.reply_every_n_messages, 
-		quotes = quotes, images = images)
+		args.actions, args.period, args.reply_every_n_messages, replies)
 	echo_handler = MessageHandler(Filters.all, cb)
 
 	dispatcher.add_handler(echo_handler)
