@@ -27,7 +27,7 @@ from lib.counters import Counters
 from lib.filter.filter import Filter
 from lib.filter.profanity import Profanity
 from lib.match import Match
-from lib.rate_limiter import RateLimiter
+from lib.rate_limiters import RateLimiters
 from lib.replies import Replies
 
 
@@ -205,22 +205,6 @@ def sendRandomReply(bot, limiter, replies, chat_id, message_id):
 
 
 #
-# Dictionary of limiters for each chat ID
-#
-limiters = {}
-
-#
-# Create the rate limiter for the current group, then return it.
-#
-def getRateLimiter(chat_id, actions, period):
-
-	if not chat_id in limiters:
-		limiters[chat_id] = RateLimiter(actions = actions, period = period)
-		
-	return(limiters[chat_id])
-
-
-#
 # This is a wrapper which returns our actual handler.
 # The reason for this is so that the variables we need can be in-scope, 
 # without having to make them globals.
@@ -233,6 +217,8 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 	filter = Filter()
 	match = Match()
 	profanity = Profanity()
+	rate_limiters = RateLimiters(actions, period)
+
 
 	#
 	# Our handler that is fired when a message comes in
@@ -300,7 +286,7 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 		#
 		# Get our rate limiter for this chat
 		# 
-		limiter = getRateLimiter(chat_id, actions, period)
+		limiter = rate_limiters.getRateLimiter(chat_id)
 
 		#
 		# If the message wasn't to the bot, and we're not replying to a user, stop.
