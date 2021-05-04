@@ -58,7 +58,7 @@ This script lets you run a Telegram Bot that (semi-regularly) posts pictures of 
    - Note that the queue for sending messages is refilled based on time-elapsed.
    - For example, ACTIONS=2 and PERIOD=10 means that .2 will be added to the queue every second.
    - So if a message is sent at second 0, the queue is now 1, at 1 second, it is 1.2, then 1.4 at 2 seconds, etc. until the queue maxes out at 2.
-- `REPLY_EVERY_N_MESSAGES` - Replies to every Nth message in the group.  100 is usually a good number.
+- `REPLY_EVERY` - Replies to every Nth message in the group.  100 is usually a good number.
    - Set to -1 to disable.
 - `QUOTES_FILE` - File containing quotes.  Defaults to `./quotes.txt`
 - `IMAGES_FILE` - CSV File containing image images and comments.  Defaults to `./urls.txt`.
@@ -70,7 +70,7 @@ This script lets you run a Telegram Bot that (semi-regularly) posts pictures of 
 I'm not even sure how to unit test against Telegram, so I have manual instructions here for now:
 
 - Start the bot with default settings, except for... 
-   - `REPLY_EVERY_N_MESSAGES`, which should be 2.
+   - `REPLY_EVERY`, which should be 2.
    - `ACTIONS` should be 2.
    - `PERIOD` should be 10.
 - Send 2 test messages to the group, ensure the bot replies to the second message.

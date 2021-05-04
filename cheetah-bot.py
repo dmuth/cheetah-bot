@@ -23,11 +23,12 @@ from telegram.ext import CallbackContext
 from telegram.ext import CommandHandler, MessageHandler, Filters
 
 import match
+from lib.counters import Counters
+from lib.filter.filter import Filter
+from lib.filter.profanity import Profanity
 from lib.match import Match
 from lib.limiter import Limiter
 from lib.replies import Replies
-from lib.filter.filter import Filter
-from lib.filter.profanity import Profanity
 
 
 #
@@ -52,7 +53,7 @@ parser.add_argument("--actions", type = float, default = 10,
 	help = "Used for rate-limiting.  How many actions can we take in a specified period?")
 parser.add_argument("--period", type = int, default = 600,
 	help = "Used for rate-limiting.  How long is our period in seconds?")
-parser.add_argument("--reply-every-n-messages", type = int, default = 100,
+parser.add_argument("--reply-every", type = int, default = 100,
 	help = "Every n messages that aren't normally handled by the bot, reply to one.  Disable with -1.")
 parser.add_argument("--quotes-file", type = str, required = True,
 	help = "Text file that contains things the bot says, one saying per line.")
@@ -204,35 +205,6 @@ def sendRandomReply(bot, limiter, replies, chat_id, message_id):
 
 
 #
-# Keeps track of how many messages that AREN'T for the bot to follow up on are
-# sent to each group, so that we can then reply every so often.
-#
-chat_counters = {}
-
-#
-# Keep track of how many messages in each group and return if we should reply
-#
-def updateCounter(chat_id, reply_every_n) -> bool:
-
-	# If we're not using this feature, bail out
-	if reply_every_n < 0:
-		return(False)
-
-	if not chat_id in chat_counters:
-		chat_counters[chat_id] = 0
-
-	chat_counters[chat_id] += 1
-
-	if chat_counters[chat_id] >= reply_every_n:
-		logger.info(f"Counter for chat {chat_id} >= {reply_every_n}. Resetting and returning true!")
-		chat_counters[chat_id] = 0
-		return(True)
-
-	logger.info(f"Counter for chat {chat_id}: {chat_counters[chat_id]} < {reply_every_n}. No reply this time.")
-	return(False)
-
-
-#
 # Dictionary of limiters for each chat ID
 #
 limiters = {}
@@ -257,6 +229,7 @@ def getRateLimiter(chat_id, actions, period):
 def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, actions, period, reply_every_n,
 	replies):
 
+	counters = Counters(reply_every_n)
 	filter = Filter()
 	match = Match()
 	profanity = Profanity()
@@ -337,7 +310,7 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 				#
 				# See if we should reply and do so.
 				#
-				should_reply = updateCounter(chat_id, reply_every_n)
+				should_reply = counters.update(chat_id)
 				if should_reply:
 					sendRandomReply(context.bot, limiter, replies, chat_id,
 						message_id = message.message_id)
@@ -398,7 +371,7 @@ def main(args):
 	# We're just gonna reply to everything.
 	#
 	cb = echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, 
-		args.actions, args.period, args.reply_every_n_messages, replies)
+		args.actions, args.period, args.reply_every, replies)
 	echo_handler = MessageHandler(Filters.all, cb)
 
 	dispatcher.add_handler(echo_handler)
