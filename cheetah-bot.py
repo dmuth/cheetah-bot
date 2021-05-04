@@ -104,24 +104,6 @@ def start(update, context):
 
 
 #
-# Check to see if the message contains "chee" or "cheetahs".
-#
-def messageContainsChee(text):
-
-	#if (re.search(r"\bchee\b", text)
-	if (re.search(r"\bchee\b", text, re.IGNORECASE)
-		or re.search(r"^/chee$", text, re.IGNORECASE)
-		or re.search(r"\bchees\b", text, re.IGNORECASE)
-		or re.search(r"\bcheet\b", text, re.IGNORECASE)
-		or re.search(r"\bcheets\b", text, re.IGNORECASE)
-		or re.search(r"\bcheetah\b", text, re.IGNORECASE)
-		):
-		return("Chee")
-
-	return(None)
-
-
-#
 # This flag is set when the bot reaches a fully awake state (aka the queue is full)
 # Going to sleep sets this to false, the queue being full again sets this to true.
 # The reason behind this flag is so that sleep and wake messages are only printed ONCE
@@ -329,8 +311,8 @@ def echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, act
 		#
 		# See if anyone in the chat said "cheetah" or "chee"
 		#
-		if messageContainsChee(text):
-			reply = messageContainsChee(text)
+		if filter.messageContainsChee(text):
+			reply = filter.messageContainsCheeReply(text)
 			logger.info("String 'chee' detected")
 
 		#

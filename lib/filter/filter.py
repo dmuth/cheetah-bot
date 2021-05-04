@@ -87,4 +87,27 @@ class Filter():
 		return(False)
 
 
+	#
+	# Check to see if the message contains "chee" or "cheetahs".
+	#
+	def messageContainsChee(self, text):
+
+		#if (re.search(r"\bchee\b", text)
+		if (re.search(r"\bchee\b", text, re.IGNORECASE)
+			or re.search(r"^/chee$", text, re.IGNORECASE)
+			or re.search(r"\bchees\b", text, re.IGNORECASE)
+			or re.search(r"\bcheet\b", text, re.IGNORECASE)
+			or re.search(r"\bcheets\b", text, re.IGNORECASE)
+			or re.search(r"\bcheetah\b", text, re.IGNORECASE)
+			):
+			return(True)
+
+		return(False)
+
+	#
+	# Get our (hardcoded at this time) reply to messages with "chee" in them.
+	#
+	def messageContainsCheeReply(self, text):
+		return("Chee")
+
 
