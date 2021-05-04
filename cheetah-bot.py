@@ -27,7 +27,7 @@ from lib.counters import Counters
 from lib.filter.filter import Filter
 from lib.filter.profanity import Profanity
 from lib.match import Match
-from lib.limiter import Limiter
+from lib.rate_limiter import RateLimiter
 from lib.replies import Replies
 
 
@@ -215,7 +215,7 @@ limiters = {}
 def getRateLimiter(chat_id, actions, period):
 
 	if not chat_id in limiters:
-		limiters[chat_id] = Limiter(actions = actions, period = period)
+		limiters[chat_id] = RateLimiter(actions = actions, period = period)
 		
 	return(limiters[chat_id])
 

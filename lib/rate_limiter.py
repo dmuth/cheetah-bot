@@ -9,7 +9,7 @@ logger = logging
 #
 # This class is used to do rate limiting on the basis of a certain amount of actions per period of time.
 #
-class Limiter():
+class RateLimiter():
 
 	# How many actions can we perform per period?
 	actions = 10
