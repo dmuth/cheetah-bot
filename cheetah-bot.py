@@ -33,9 +33,9 @@ logger.basicConfig(level = logger.INFO,
 #
 parser = argparse.ArgumentParser(description = "Telegram bot to post cheetah sounds and pictures.")
 parser.add_argument("token", type = str, help = "API token")
-parser.add_argument("--group_ids", type = str,
+parser.add_argument("--group_ids", type = str, nargs="+",
 	help = "Comma-delimited list of group IDs where this bot can operate.  IDs must be an exact match.")
-parser.add_argument("--group_names", type = str,
+parser.add_argument("--group_names", type = str, nargs="+",
 	help = "Comma-delimited group names which are matched on a substring basis.  Useful when unsure of the group ID (which can then be gotten by debug messages) Matching is done on a substring basis, so be careful!")
 parser.add_argument("--actions", type = float, default = 10,
 	help = "Used for rate-limiting.  How many actions can we take in a specified period?")

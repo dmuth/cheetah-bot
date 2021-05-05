@@ -34,7 +34,8 @@ echo "# HTTP_PROXY: ${HTTP_PROXY}"
 echo "# HTTPS_PROXY: ${HTTPS_PROXY}"
 echo "# "
 
-exec ${CMD} ${TOKEN} --group_names "${GROUP_NAMES}" --group_ids "${GROUP_IDS}" \
+#set -x # Debugging
+exec ${CMD} ${TOKEN} --group_names ${GROUP_NAMES} --group_ids ${GROUP_IDS} \
 	--actions ${ACTIONS} --period ${PERIOD} --reply-every ${REPLY_EVERY} \
 	--quotes-file ${QUOTES_FILE} --images-file ${IMAGES_FILE}
 

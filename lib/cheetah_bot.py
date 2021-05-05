@@ -213,8 +213,7 @@ class CheetahBot():
 	#
 	def getAllowedIds(self, group_ids):
 
-		ids = group_ids.split(",")
-		retval = [ id for id in ids if id != "" ]
+		retval = [ id for id in group_ids if id != "" ]
 		return(retval)
 
 
