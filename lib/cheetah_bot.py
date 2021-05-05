@@ -122,7 +122,8 @@ class CheetahBot():
 		# Was this a DM?
 		if self.filter.messageIsDm(update):
 			logger.info("This is a DM, bailing out (for now...)")
-			text = "You must message me in an approved group."
+			text = ("You must message me in an approved group.\n\n" 
+				+ "Or download your own copy of this bot at: https://github.com/dmuth/cheetah-bot")
 			context.bot.send_message(chat_id = update.effective_chat.id, text = text)
 			return(None)
 

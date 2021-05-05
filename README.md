@@ -102,7 +102,6 @@ If you'd like to send traffic through `mitmproxy` for testing, here's how to mak
 
 ## Future Features to add
 
-- [ ] Private messages to bot should return a URL for the GitHub
 - [ ] Ability for group admins to configure limits on bot
 - [ ] Ability for bot to join any group
 
