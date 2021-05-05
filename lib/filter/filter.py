@@ -99,6 +99,7 @@ class Filter():
 			or re.search(r"\bcheet\b", text, re.IGNORECASE)
 			or re.search(r"\bcheets\b", text, re.IGNORECASE)
 			or re.search(r"\bcheetah\b", text, re.IGNORECASE)
+			or re.search(r"\bcheetahs\b", text, re.IGNORECASE)
 			):
 			return(True)
 
