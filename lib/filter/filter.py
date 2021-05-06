@@ -109,10 +109,25 @@ class Filter():
 
 		return(False)
 
+
 	#
 	# Get our (hardcoded at this time) reply to messages with "chee" in them.
 	#
 	def messageContainsCheeReply(self, text):
 		return("Chee")
+
+
+	#
+	# Does the message have "help" in it?
+	# We can't do an exact match because the name of the may be anywhere 
+	# in the message as well.
+	# 
+	def messageContainsHelp(self, text):
+
+		if (re.search(r"\bhelp\b", text, re.IGNORECASE)):
+			logger.info("Message is asking for help!")
+			return(True)
+
+		return(False)
 
 

@@ -80,17 +80,4 @@ class Match():
 		return(False)
 
 
-	#
-	# Does the message have "help" in it?
-	#
-	def doesMessageHaveHelp(self,text):
-
-		if (re.search(r"\bhelp\b", text, re.IGNORECASE)):
-			logger.info("Message is asking for help!")
-			return(True)
-
-		return(False)
-
-
-
 

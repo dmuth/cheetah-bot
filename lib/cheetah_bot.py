@@ -44,6 +44,8 @@ My directives are as follows:\n
 - I have a quota of sending {actions} messages per {period} seconds.
 {reply_every_text}
 
+@ me with 'help' to see this message again.
+
 Made with 🙀 by Leopards.
 """
 
@@ -178,7 +180,7 @@ Made with 🙀 by Leopards.
 		# Did the user ask us for help?
 		#
 		if message_to_me:
-			if self.match.doesMessageHaveHelp(text):
+			if self.filter.messageContainsHelp(text):
 				logger.info("User asked us for help, give it.")
 				reply = self.about_text
 
