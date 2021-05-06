@@ -50,9 +50,10 @@ This script lets you run a Telegram Bot that (semi-regularly) posts pictures of 
 
 ## Configuration
 
-- `GROUP_IDS` - List of group IDs (separated by spaces) where the bot should operate.
+- `GROUP_IDS` - Optional. List of group IDs (separated by spaces) where the bot should operate.
    - If unsure of the group ID, use `GROUP_NAMES`, and the ID will show up in the logging messages from the bot.
-- `GROUP_NAMES` - A list of strings (separated by spaces) which are then substring matched against the name of the gorup as messages come in.  Be careful with this, because `test` will match `test`, `test2`, and `test1234`, for example.  Note that a string can't have a space in it, since the space is a delimiter.  
+   - If neither this nor `GROUP_NAMES` are specified, then any group may add this bot.
+- `GROUP_NAMES` - Optional. A list of strings (separated by spaces) which are then substring matched against the name of the gorup as messages come in.  Be careful with this, because `test` will match `test`, `test2`, and `test1234`, for example.  Note that a string can't have a space in it, since the space is a delimiter.  
 - `ACTIONS` - Used for rate-limiting.  How many messages can be sent in a given period?
 - `PERIOD` - Used for rate-limiting. How long is the period in seconds?
    - Note that the queue for sending messages is refilled based on time-elapsed.

@@ -39,6 +39,12 @@ class Match():
 	#
 	def doesGroupMatch(self, group_ids, group_names, chat_id, chat_name):
 
+		#
+		# If no restrictions were defined, then let any group interact with the bot.
+		#
+		if (not group_ids) and (not group_names):
+			return(True)
+
 		if not self.doesGroupIdMatch(group_ids, chat_id):
 			logger.info(f"Chat id '{chat_id}' not found in allowlist, trying chat title...")
 

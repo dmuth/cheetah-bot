@@ -54,9 +54,12 @@ class CheetahBot():
 		self.sleep_wake = SleepWake()
 
 		self.allowed_group_ids = self.getAllowedIds(group_ids)
-		logger.info(f"Allowed Group IDs: {self.allowed_group_ids}")
 		self.allowed_group_names = self.getAllowedIds(group_names)
-		logger.info(f"Allowed Group Names: {self.allowed_group_names}")
+		if self.allowed_group_ids or self.allowed_group_names:
+			logger.info(f"Allowed Group IDs: {self.allowed_group_ids}")
+			logger.info(f"Allowed Group Names: {self.allowed_group_names}")
+		else:
+			logger.info("No Group IDs or Group Names specified, the bot is open to ALL groups!")
 
 		bot = telegram.Bot(token = token)
 		logger.info(f"Successfully authenticated! {bot.get_me()}")
@@ -75,12 +78,6 @@ class CheetahBot():
 		#
 		# We're just gonna reply to everything.
 		#
-		#cb = echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, 
-		#	args.actions, args.period, args.reply_every, replies)
-		#cb = cheetah_bot.echo_wrapper(my_id, my_username, allowed_group_ids, allowed_group_names, 
-			#args.actions, args.period, args.reply_every, replies)
-		#echo_handler = MessageHandler(Filters.all, cb)
-
 		echo_handler = MessageHandler(Filters.all, self.echo)
 		dispatcher.add_handler(echo_handler)
 
