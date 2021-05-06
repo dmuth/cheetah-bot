@@ -32,16 +32,17 @@ class CheetahBot():
 	profanity = None
 	rate_limiters = None
 	replies = None 
+	chee_more = None
 	sleep_wake = None
 
 	about_text = """I am Cheetah Bot -- a cybernetic organism: living spots and fur over a metal endoskeleton.\n
 My mission is to chirp at you.  Add me to a Telegram group for cheetah sounds and pictures.\n
 My directives are as follows:\n
-- I respond to messages with "chee" in them.
+{chee_text}
 - I notice profanity and respond to it.
 - If you @ me, I respond with cheetah pictures and noises.
 - I have a quota of sending {actions} messages per {period} seconds.
-{reply_every}
+{reply_every_text}
 
 Made with 🙀 by Leopards.
 """
@@ -53,22 +54,28 @@ Made with 🙀 by Leopards.
 	#
 	# Our main entry point to start bot.  This function will never exit.
 	#
-	def start(self, token, quotes_file, images_file, group_ids, group_names, 
-		actions, period, reply_every):
+	def start(self, token, quotes_file, images_file, group_ids, group_names,
+		actions, period, chee_more, reply_every):
 
 		self.counters = Counters(reply_every)
 		self.filter = Filter()
 		self.match = Match()
 		self.profanity = Profanity()
 		self.rate_limiters = RateLimiters(actions, period)
+		self.chee_more = chee_more
 		self.replies = Replies(quotes_file, images_file)
 		self.sleep_wake = SleepWake()
 
 		reply_every_text = ""
 		if reply_every:
 			reply_every_text = f"- I reply to the last message every {reply_every} messages posted."
+
+		chee_text = "- I respond to messages that are just 'chee'."
+		if chee_more:
+			chee_text = "- I respond to messages that have 'chee' in them."
+
 		self.about_text = self.about_text.format(actions = actions, period = period, 
-			reply_every = reply_every_text)
+			reply_every_text = reply_every_text, chee_text = chee_text)
 		#print("DEBUG: ", self.about_text) # Debugging
 
 		self.allowed_group_ids = self.getAllowedIds(group_ids)
@@ -178,9 +185,16 @@ Made with 🙀 by Leopards.
 		#
 		# See if anyone in the chat said "cheetah" or "chee"
 		#
-		if self.filter.messageContainsChee(text):
-			reply = self.filter.messageContainsCheeReply(text)
-			logger.info("String 'chee' detected")
+		if self.chee_more:
+			if self.filter.messageContainsChee(text):
+				reply = self.filter.messageContainsCheeReply(text)
+				logger.info("String 'chee' detected in substring")
+
+		else:
+			if self.filter.messageIsChee(text):
+				reply = "chee"
+				logger.info("String 'chee' is exact match.")
+
 
 		#
 		# I'm not thrilled about calling checkForFoulLanguage() twice, but Python

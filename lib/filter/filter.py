@@ -84,6 +84,15 @@ class Filter():
 
 
 	#
+	# Check to see if the message is exactly "chee" or "/chee".
+	#
+	def messageIsChee(self, text):
+		if text == "chee" or text == "/chee":
+			return(True)
+		return(False)
+
+
+	#
 	# Check to see if the message contains "chee" or "cheetahs".
 	#
 	def messageContainsChee(self, text):

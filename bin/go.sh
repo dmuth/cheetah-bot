@@ -35,11 +35,11 @@ test "${GROUP_IDS}" || GROUP_IDS=$(cat ./.env | egrep "^GROUP_IDS=" | cut -d= -f
 test "${ACTIONS}" || ACTIONS=$(cat ./.env | egrep "^ACTIONS=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${PERIOD}" || PERIOD=$(cat ./.env | egrep "^PERIOD=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${REPLY_EVERY}" || REPLY_EVERY=$(cat ./.env | egrep "^REPLY_EVERY=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
+test "${CHEE_MORE}" || CHEE_MORE=$(cat ./.env | egrep "^CHEE_MORE=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${QUOTES_FILE}" || QUOTES_FILE=$(cat ./.env | egrep "^QUOTES_FILE=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${IMAGES_FILE}" || IMAGES_FILE=$(cat ./.env | egrep "^IMAGES_FILE=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${HTTP_PROXY}" || HTTP_PROXY=$(cat ./.env | egrep "^HTTP_PROXY=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${HTTPS_PROXY}" || HTTPS_PROXY=$(cat ./.env | egrep "^HTTPS_PROXY=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
-
 
 #
 # Run our Docker container with any arguments that were passed in
@@ -52,6 +52,7 @@ docker run -it \
 	-e "ACTIONS=${ACTIONS}" \
 	-e "PERIOD=${PERIOD}" \
 	-e "REPLY_EVERY=${REPLY_EVERY}" \
+	-e "CHEE_MORE=${CHEE_MORE}" \
 	-e "QUOTES_FILE=${QUOTES_FILE}" \
 	-e "IMAGES_FILE=${IMAGES_FILE}" \
 	-e "HTTP_PROXY=${HTTP_PROXY}" \
