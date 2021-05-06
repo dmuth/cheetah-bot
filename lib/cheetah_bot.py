@@ -34,6 +34,16 @@ class CheetahBot():
 	replies = None 
 	sleep_wake = None
 
+	about_text = """I am Cheetah Bot -- a cybernetic organism: living spots and fur over a metal endoskeleton.\n
+My mission is to chirp at you.  Add me to a Telegram group for cheetah sounds and pictures.\n
+My directives are as follows:\n
+- I respond to messages with "chee" in them.
+- I notice profanity and respond to it.
+- If you @ me, I respond with cheetah pictures and noises.
+- I sometimes respond to random messages, because cheetahs are random cats.
+
+Made with 🙀 by Leopards.
+"""
 
 	def __init__(self):
 		pass
@@ -102,7 +112,7 @@ class CheetahBot():
 		# How old is the message?
 		age = time.time() - message.date.timestamp()
 
-		logger.info(f"New Message: age={age:.3f}, chat_id={update.effective_chat.id}, text={text[0:30]}...")
+		logger.info(f"New Message: age={age:.3f}, chat_id={update.effective_chat.id}, chat_name='{update.effective_chat.title}', text={text[0:30]}...")
 		#logger.info(f"Update: {update}") # Debugging
 		#logger.info(f"Message: {message}") # Debugging
 		#logger.info(f"Effective chat: {update.effective_chat}") # Debugging
@@ -118,10 +128,8 @@ class CheetahBot():
 
 		# Was this a DM?
 		if self.filter.messageIsDm(update):
-			logger.info("This is a DM, bailing out (for now...)")
-			text = ("You must message me in an approved group.\n\n" 
-				+ "Or download your own copy of this bot at: https://github.com/dmuth/cheetah-bot")
-			context.bot.send_message(chat_id = update.effective_chat.id, text = text)
+			logger.info("This is a DM, talk about ourself and bail out (for now...)")
+			context.bot.send_message(chat_id = update.effective_chat.id, text = self.about_text)
 			return(None)
 
 		#
@@ -132,6 +140,27 @@ class CheetahBot():
 		if not self.match.doesGroupMatch(self.allowed_group_ids, self.allowed_group_names, 
 			chat_id, chat_name):
 			return(None)
+
+		###
+		#
+		# Start of section where we compose replies.
+		# (In the future, I'll factor this out.)
+		#
+		###
+
+		#
+		# Announce ourself it added to a group
+		#
+		if self.filter.botWasAddedToGroup(update, message, self.my_id):
+			logger.info(f"I was added to the chat '{chat_name}' ({chat_id}), let's say hi!")
+			reply = self.about_text
+
+		#
+		# Did the user ask us for help?
+		#
+		if self.match.doesUserMatchHelp(self.my_id, self.my_username, update.message, text):
+			logger.info("User asked us for help, give it.")
+			reply = self.about_text
 
 		#
 		# See if anyone in the chat said "cheetah" or "chee"
@@ -148,6 +177,7 @@ class CheetahBot():
 		if self.profanity.hasFoulLanguage(update, text):
 			reply = self.profanity.getReply()
 			logger.info("Profanity detected")
+
 
 		#
 		# Get our rate limiter for this chat
@@ -233,14 +263,16 @@ class CheetahBot():
 
 	#
 	# Send a message in a way that honors our rate limiter's quota.
+	# All messages are either a reply or an image.
 	#
 	def sendMessage(self, bot, limiter, chat_id, 
-		reply = None, image_url = None, caption = None, message_id = None):
+		reply = None, image_url = None, caption = None, message_id = None
+		):
 
 		if limiter.action():
 
 			if reply:
-				logger.info(f"Sending reply: {reply}, quota_left={limiter.getQuota():.3f}")
+				logger.info(f"Sending reply: {reply[0:40]}..., reply_to={message_id} quota_left={limiter.getQuota():.3f}")
 				if not message_id:
 					bot.send_message(chat_id = chat_id, text = reply)
 				else:
@@ -248,15 +280,16 @@ class CheetahBot():
 						reply_to_message_id = message_id)
 
 			elif image_url:
-				logger.info(f"Sending reply: {image_url}, quota_left={limiter.getQuota():.3f}")
 				if not message_id:
 					bot.send_photo(chat_id = chat_id, photo = image_url, caption = caption)
+					logger.info(f"Sending image: {image_url}, caption: {caption[0:20]}... quota_left={limiter.getQuota():.3f}")
 				else:
+					logger.info(f"Sending image: {image_url}, caption: {caption[0:20]}... reply_to={message_id} quota_left={limiter.getQuota():.3f}")
 					bot.send_photo(chat_id = chat_id, photo = image_url, caption = caption,
 						reply_to_message_id = message_id)
 
 			else:
-				raise Exception(f"Not sure what to send with a message that has no text or URL")
+				raise Exception(f"Not sure what to send with a message that is not a reply and doesn't have a URL")
 
 
 			#

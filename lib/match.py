@@ -1,5 +1,6 @@
 
 import logging
+import re
 import time
 
 logger = logging
@@ -77,5 +78,23 @@ class Match():
 			return(True)
 
 		return(False)
+
+
+
+	#
+	# Was the message to me AND did the user ask for help?
+	#
+	def doesUserMatchHelp(self, my_id, my_username, message, text):
+
+		if not self.doesUserMatch(my_id, my_username, message, text):
+			return(False) 
+
+		if (re.search(r"\bhelp\b", text, re.IGNORECASE)):
+			return(True)
+
+		return(False)
+
+
+
 
 

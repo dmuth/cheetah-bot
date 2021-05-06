@@ -10,7 +10,8 @@ This script lets you run a Telegram Bot that (semi-regularly) posts pictures of 
 
 - Will reply to every Nth message with cheetah sounds or pictures. (configurable)
 - Messages with profanity or the middle finger emoji will provoke smartass responses.
-- Will only interact with allowlisted groups/group IDs.
+- Can be configured to only interact wiht allowlisted groups/group IDs.
+- When added to a channel, sent the message `help` on a channel, or DMed, it will respond with an "about me" string.
 - Configurable rate limiting to prevent accidental flooding of the group.
 - Age checking on messages to prevent spamming the group after a hiatus.
 - Support for talking to <a href="https://mitmproxy.org/">mitmproxy</a>, if you'd like to monitor network activity.
@@ -104,7 +105,8 @@ If you'd like to send traffic through `mitmproxy` for testing, here's how to mak
 ## Future Features to add
 
 - [ ] Ability for group admins to configure limits on bot
-- [ ] Ability for bot to join any group
+- [ ] Suppress `REPLY_EVERY` functionality
+- [ ] Add `REPLY_RANDOM` with a percent float that maxes out at `.10`
 
 
 ## Credits

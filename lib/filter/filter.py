@@ -1,7 +1,7 @@
 
 #
 # This file holds our main Filter class, where functions that don't
-# belong in a more specific calss will be placed.
+# belong in a more specific class will be placed.
 #
 import logging
 import re
@@ -44,10 +44,6 @@ class Filter():
 
 		chat_id = update.effective_chat.id
 		chat_name = update.effective_chat.title
-
-		if self.botWasAddedToGroup(update, message, my_id):
-			logger.info(f"I was added to the chat '{chat_name}' ({chat_id})!")
-			return(True)
 
 		if self.botWasRemovedFromGroup(update, message, my_id):
 			logger.info(f"I was removed from the chat '{chat_name}' ({chat_id})")
@@ -92,7 +88,6 @@ class Filter():
 	#
 	def messageContainsChee(self, text):
 
-		#if (re.search(r"\bchee\b", text)
 		if (re.search(r"\bchee\b", text, re.IGNORECASE)
 			or re.search(r"^/chee$", text, re.IGNORECASE)
 			or re.search(r"\bchees\b", text, re.IGNORECASE)
