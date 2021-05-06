@@ -40,7 +40,8 @@ My directives are as follows:\n
 - I respond to messages with "chee" in them.
 - I notice profanity and respond to it.
 - If you @ me, I respond with cheetah pictures and noises.
-- I sometimes respond to random messages, because cheetahs are random cats.
+- I have a quota of sending {actions} messages per {period} seconds.
+{reply_every}
 
 Made with 🙀 by Leopards.
 """
@@ -62,6 +63,13 @@ Made with 🙀 by Leopards.
 		self.rate_limiters = RateLimiters(actions, period)
 		self.replies = Replies(quotes_file, images_file)
 		self.sleep_wake = SleepWake()
+
+		reply_every_text = ""
+		if reply_every:
+			reply_every_text = f"- I reply to the last message every {reply_every} messages posted."
+		self.about_text = self.about_text.format(actions = actions, period = period, 
+			reply_every = reply_every_text)
+		#print("DEBUG: ", self.about_text) # Debugging
 
 		self.allowed_group_ids = self.getAllowedIds(group_ids)
 		self.allowed_group_names = self.getAllowedIds(group_names)
@@ -148,6 +156,10 @@ Made with 🙀 by Leopards.
 		#
 		###
 
+		message_to_me = False
+		if self.match.doesUserMatch(self.my_id, self.my_username, update.message, text):
+			message_to_me = True
+	
 		#
 		# Announce ourself it added to a group
 		#
@@ -158,9 +170,10 @@ Made with 🙀 by Leopards.
 		#
 		# Did the user ask us for help?
 		#
-		if self.match.doesUserMatchHelp(self.my_id, self.my_username, update.message, text):
-			logger.info("User asked us for help, give it.")
-			reply = self.about_text
+		if message_to_me:
+			if self.match.doesMessageHaveHelp(text):
+				logger.info("User asked us for help, give it.")
+				reply = self.about_text
 
 		#
 		# See if anyone in the chat said "cheetah" or "chee"
@@ -188,7 +201,7 @@ Made with 🙀 by Leopards.
 		# If the message wasn't to the bot, and we're not replying to a user, stop.
 		#
 		if not reply:
-			if not self.match.doesUserMatch(self.my_id, self.my_username, update.message, text):
+			if not message_to_me:
 				#
 				# See if we should reply and do so.
 				#
@@ -280,11 +293,12 @@ Made with 🙀 by Leopards.
 						reply_to_message_id = message_id)
 
 			elif image_url:
+				newline = "\n"
 				if not message_id:
 					bot.send_photo(chat_id = chat_id, photo = image_url, caption = caption)
-					logger.info(f"Sending image: {image_url}, caption: {caption[0:20]}... quota_left={limiter.getQuota():.3f}")
+					logger.info(f"Sending image: {image_url}, caption: {caption.replace(newline, ' ')[0:20]}... quota_left={limiter.getQuota():.3f}")
 				else:
-					logger.info(f"Sending image: {image_url}, caption: {caption[0:20]}... reply_to={message_id} quota_left={limiter.getQuota():.3f}")
+					logger.info(f"Sending image: {image_url}, caption: {caption.replace(newline, ' ')[0:20]}... reply_to={message_id} quota_left={limiter.getQuota():.3f}")
 					bot.send_photo(chat_id = chat_id, photo = image_url, caption = caption,
 						reply_to_message_id = message_id)
 

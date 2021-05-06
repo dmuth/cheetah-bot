@@ -70,30 +70,26 @@ class Match():
 
 		if reply_to:
 			if my_id == reply_to.from_user.id:
-				logger.info("This reply was to me!")
+				logger.info("This message was a reply to me!")
 				return(True)
 		
 		if my_username in text:
-			logger.info("This message was to me!")
+			logger.info("This message has my username in it!")
 			return(True)
 
 		return(False)
 
 
-
 	#
-	# Was the message to me AND did the user ask for help?
+	# Does the message have "help" in it?
 	#
-	def doesUserMatchHelp(self, my_id, my_username, message, text):
-
-		if not self.doesUserMatch(my_id, my_username, message, text):
-			return(False) 
+	def doesMessageHaveHelp(self,text):
 
 		if (re.search(r"\bhelp\b", text, re.IGNORECASE)):
+			logger.info("Message is asking for help!")
 			return(True)
 
 		return(False)
-
 
 
 

@@ -41,7 +41,7 @@ parser.add_argument("--actions", type = float, default = 10,
 	help = "Used for rate-limiting.  How many actions can we take in a specified period?")
 parser.add_argument("--period", type = int, default = 600,
 	help = "Used for rate-limiting.  How long is our period in seconds?")
-parser.add_argument("--reply-every", type = int, default = 100,
+parser.add_argument("--reply-every", type = int, nargs = "?",
 	help = "Every n messages that aren't normally handled by the bot, reply to one.  Disable with -1.")
 parser.add_argument("--quotes-file", type = str, required = True,
 	help = "Text file that contains things the bot says, one saying per line.")

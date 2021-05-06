@@ -30,7 +30,7 @@ class Counters():
 	def update(self, chat_id) -> bool:
 
 		# If we're not using this feature, bail out
-		if self.reply_every_n < 0:
+		if (not self.reply_every_n) or (self.reply_every_n < 0):
 			return(False)
 
 		if not chat_id in self.chat_counters:
