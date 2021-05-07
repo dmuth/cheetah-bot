@@ -177,12 +177,25 @@ Made with 🙀 by Leopards.
 			reply = self.about_text
 
 		#
+		# Get our rate limiter for this chat
+		# 
+		limiter = self.rate_limiters.getRateLimiter(chat_id)
+
+		#
 		# Did the user ask us for help?
 		#
 		if message_to_me:
+			#
+			# Did the user ask us for help?
+			#
 			if self.filter.messageContainsHelp(text):
 				logger.info("User asked us for help, give it.")
 				reply = self.about_text
+
+			elif self.filter.messageContainsStats(text):
+				logger.info("User wants to know the bot stats")
+				reply = self.getStats(limiter)
+
 
 		#
 		# See if anyone in the chat said "cheetah" or "chee"
@@ -207,11 +220,6 @@ Made with 🙀 by Leopards.
 			reply = self.profanity.getReply()
 			logger.info("Profanity detected")
 
-
-		#
-		# Get our rate limiter for this chat
-		# 
-		limiter = self.rate_limiters.getRateLimiter(chat_id)
 
 		#
 		# If the message wasn't to the bot, and we're not replying to a user, stop.
@@ -288,6 +296,16 @@ Made with 🙀 by Leopards.
 				image_url = reply["url"], caption = reply["caption"],
 				message_id = message_id)
 
+
+	#
+	# Return the current stats for the bot in the current channel.
+	#
+	def getStats(self, limiter):
+		retval = (f"I can send {limiter.actions} messages every {limiter.period} seconds."
+			+ f"I have {limiter.getQuota():.1f} more messages left in my quota."
+			)
+
+		return(retval)
 
 
 	#

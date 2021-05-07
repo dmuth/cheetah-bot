@@ -131,3 +131,17 @@ class Filter():
 		return(False)
 
 
+	#
+	# Does the message have "stats" in it?
+	# We can't do an exact match because the name of the may be anywhere 
+	# in the message as well.
+	# 
+	def messageContainsStats(self, text):
+
+		if (re.search(r"\bstats\b", text, re.IGNORECASE)):
+			logger.info("Message is asking for stats!")
+			return(True)
+
+		return(False)
+
+
