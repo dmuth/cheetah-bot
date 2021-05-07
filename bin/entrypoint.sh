@@ -43,20 +43,6 @@ then
 	exit 1
 fi
 
-if test ! "${GROUP_NAMES}"
-then
-	if test ! "${GROUP_IDS}"
-	then
-		echo "! "
-		echo "! Neither GROUP_NAMES nor GROUP_IDS are specified in env!"
-		echo "! "
-		echo "! I need at least ONE set to allowlist specific groups, so I'm gonna bail."
-		echo "! "
-		exit 1
-	fi
-fi
-
-
 echo "# "
 echo "# Running ${CMD}..."
 echo "# "
