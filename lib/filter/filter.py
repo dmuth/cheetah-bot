@@ -87,8 +87,10 @@ class Filter():
 	# Check to see if the message is exactly "chee" or "/chee".
 	#
 	def messageIsChee(self, text):
-		if text == "Chee" or text == "chee" or text == "/chee":
+		if (text == "/chee"
+			or re.search(r"^chee$", text, re.IGNORECASE)):
 			return(True)
+
 		return(False)
 
 
