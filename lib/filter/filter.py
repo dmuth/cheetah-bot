@@ -88,7 +88,8 @@ class Filter():
 	#
 	def messageIsChee(self, text):
 		if (text == "/chee"
-			or re.search(r"^chee$", text, re.IGNORECASE)):
+			#or re.search(r"^chee$", text, re.IGNORECASE)
+			):
 			return(True)
 
 		return(False)
@@ -97,19 +98,19 @@ class Filter():
 	#
 	# Check to see if the message contains "chee" or "cheetahs".
 	#
-	def messageContainsChee(self, text):
-
-		if (re.search(r"\bchee\b", text, re.IGNORECASE)
-			or re.search(r"^/chee$", text, re.IGNORECASE)
-			or re.search(r"\bchees\b", text, re.IGNORECASE)
-			or re.search(r"\bcheet\b", text, re.IGNORECASE)
-			or re.search(r"\bcheets\b", text, re.IGNORECASE)
-			or re.search(r"\bcheetah\b", text, re.IGNORECASE)
-			or re.search(r"\bcheetahs\b", text, re.IGNORECASE)
-			):
-			return(True)
-
-		return(False)
+	#def messageContainsChee(self, text):
+	#
+	#	if (re.search(r"\bchee\b", text, re.IGNORECASE)
+	#		or re.search(r"^/chee$", text, re.IGNORECASE)
+	#		or re.search(r"\bchees\b", text, re.IGNORECASE)
+	#		or re.search(r"\bcheet\b", text, re.IGNORECASE)
+	#		or re.search(r"\bcheets\b", text, re.IGNORECASE)
+	#		or re.search(r"\bcheetah\b", text, re.IGNORECASE)
+	#		or re.search(r"\bcheetahs\b", text, re.IGNORECASE)
+	#		):
+	#		return(True)
+	#
+	#	return(False)
 
 
 	#

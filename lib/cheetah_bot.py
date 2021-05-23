@@ -32,7 +32,6 @@ class CheetahBot():
 	profanity = None
 	rate_limiters = None
 	replies = None 
-	chee_more = None
 	sleep_wake = None
 
 	about_text = """I am Cheetah Bot -- a cybernetic organism: living spots and fur over a metal endoskeleton.\n
@@ -57,14 +56,13 @@ Made with 🙀 by Leopards.
 	# Our main entry point to start bot.  This function will never exit.
 	#
 	def start(self, token, quotes_file, images_file, group_ids, group_names,
-		actions, period, chee_more, reply_every):
+		actions, period, reply_every):
 
 		self.counters = Counters(reply_every)
 		self.filter = Filter()
 		self.match = Match()
 		self.profanity = Profanity()
 		self.rate_limiters = RateLimiters(actions, period)
-		self.chee_more = chee_more
 		self.replies = Replies(quotes_file, images_file)
 		self.sleep_wake = SleepWake()
 
@@ -72,9 +70,7 @@ Made with 🙀 by Leopards.
 		if reply_every:
 			reply_every_text = f"- I reply to the last message every {reply_every} messages posted."
 
-		chee_text = "- I respond to messages that are just 'chee'."
-		if chee_more:
-			chee_text = "- I respond to messages that have 'chee' in them."
+		chee_text = "- I respond to messages that are just '/chee'."
 
 		self.about_text = self.about_text.format(actions = actions, period = period, 
 			reply_every_text = reply_every_text, chee_text = chee_text)
@@ -198,17 +194,11 @@ Made with 🙀 by Leopards.
 
 
 		#
-		# See if anyone in the chat said "cheetah" or "chee"
+		# See if anyone in the chat said "cheetah" or "/chee"
 		#
-		if self.chee_more:
-			if self.filter.messageContainsChee(text):
-				reply = self.filter.messageContainsCheeReply(text)
-				logger.info("String 'chee' detected in substring")
-
-		else:
-			if self.filter.messageIsChee(text):
-				reply = "chee"
-				logger.info("String 'chee' is exact match.")
+		if self.filter.messageIsChee(text):
+			reply = "chee"
+			logger.info("String '/chee' is exact match.")
 
 
 		#
@@ -302,7 +292,7 @@ Made with 🙀 by Leopards.
 	#
 	def getStats(self, limiter):
 		retval = (f"I can send {limiter.actions} messages every {limiter.period} seconds."
-			+ f"I have {limiter.getQuota():.1f} more messages left in my quota."
+			+ f"I have {limiter.getQuota()-1:.1f} more messages left in my quota."
 			)
 
 		return(retval)
@@ -315,6 +305,10 @@ Made with 🙀 by Leopards.
 	def sendMessage(self, bot, limiter, chat_id, 
 		reply = None, image_url = None, caption = None, message_id = None
 		):
+
+		if self.sleep_wake.isAsleep(chat_id):
+			logger.info(f"We're asleep, not sending reply to chat {chat_id}...")
+			return(None)
 
 		if limiter.action():
 

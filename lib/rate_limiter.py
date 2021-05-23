@@ -26,7 +26,7 @@ class RateLimiter():
 	#
 	quota = 0
 
-	# How much the queue fills per second.
+	# How much the quota fills per second.
 	fill_rate = 0
 
 

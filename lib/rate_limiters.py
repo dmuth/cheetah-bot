@@ -1,7 +1,7 @@
 
 
 import logging
-from rate_limiter import RateLimiter
+from lib.rate_limiter import RateLimiter
 
 logger = logging
 

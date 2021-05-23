@@ -62,7 +62,6 @@ This script lets you run a Telegram Bot that (semi-regularly) posts pictures of 
    - So if a message is sent at second 0, the queue is now 1, at 1 second, it is 1.2, then 1.4 at 2 seconds, etc. until the queue maxes out at 2.
 - `REPLY_EVERY` - Replies to every Nth message in the group.  100 is usually a good number.
    - Optional.  If not specified, the cheetah bot will not issue any unsolicited replies.
-- `CHEE_MORE` - By default, replies to messages that are exactly `chee` or `/chee`.  If this is set, will reply to messges with `chee` *anywhere* in the message.  While fun, can get quite spammy!
 - `QUOTES_FILE` - File containing quotes.  Defaults to `./quotes.txt`
 - `IMAGES_FILE` - CSV File containing image images and comments.  Defaults to `./urls.txt`.
    - Default images can be found Imgur: https://imgur.com/gallery/iisbC6p
@@ -85,6 +84,13 @@ I'm not even sure how to unit test against Telegram, so I have manual instructio
    - Repeat a few times to make sure it does text AND images
 - Spam the bot with messages until you exhaust the quota (it won't take long with these settings) and make sure it goes to sleep than wakes back up.
 - Finally, send a DM to the bot and make sure it replies.
+
+### Unit Testing
+
+- `pytest` - Specify `-s` to print contents of stdout. Specify `--log-cli-level=info` to print logging messages.
+   - Note that `--log-cli-level=info` may break some tests, and there are calls to get quota values in logging messages.  I warned ya!
+
+There is a great blog post about mocking <a href="https://yeraydiazdiaz.medium.com/what-the-mock-cheatsheet-mocking-in-python-6a71db997832">over here</a>.
 
 
 ## Mitmproxy Support
