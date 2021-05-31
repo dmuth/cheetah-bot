@@ -34,7 +34,7 @@ test "${GROUP_NAMES}" || GROUP_NAMES=$(cat ./.env | egrep "^GROUP_NAMES=" | cut 
 test "${GROUP_IDS}" || GROUP_IDS=$(cat ./.env | egrep "^GROUP_IDS=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${ACTIONS}" || ACTIONS=$(cat ./.env | egrep "^ACTIONS=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${PERIOD}" || PERIOD=$(cat ./.env | egrep "^PERIOD=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
-test "${REPLY_EVERY}" || REPLY_EVERY=$(cat ./.env | egrep "^REPLY_EVERY=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
+test "${POST_EVERY}" || POST_EVERY=$(cat ./.env | egrep "^POST_EVERY=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${CHEE_MORE}" || CHEE_MORE=$(cat ./.env | egrep "^CHEE_MORE=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${QUOTES_FILE}" || QUOTES_FILE=$(cat ./.env | egrep "^QUOTES_FILE=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${IMAGES_FILE}" || IMAGES_FILE=$(cat ./.env | egrep "^IMAGES_FILE=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
@@ -51,7 +51,7 @@ docker run -it \
 	-e "GROUP_IDS=${GROUP_IDS}" \
 	-e "ACTIONS=${ACTIONS}" \
 	-e "PERIOD=${PERIOD}" \
-	-e "REPLY_EVERY=${REPLY_EVERY}" \
+	-e "POST_EVERY=${POST_EVERY}" \
 	-e "CHEE_MORE=${CHEE_MORE}" \
 	-e "QUOTES_FILE=${QUOTES_FILE}" \
 	-e "IMAGES_FILE=${IMAGES_FILE}" \

@@ -2,6 +2,7 @@
 
 import logging
 import random
+import threading
 import time
 
 from counters import Counters
@@ -41,7 +42,7 @@ My directives are as follows:\n
 - I notice profanity and respond to it.
 - If you @ me, I respond with cheetah pictures and noises.
 - I have a quota of sending {actions} messages per {period} seconds.
-{reply_every_text}
+{post_every_text}
 
 @ me with 'help' to see this message again.
 
@@ -56,9 +57,9 @@ Made with 🙀 by Leopards.
 	# Our main entry point to start bot.  This function will never exit.
 	#
 	def start(self, token, quotes_file, images_file, group_ids, group_names,
-		actions, period, reply_every):
+		actions, period, post_every):
 
-		self.counters = Counters(reply_every)
+		self.counters = Counters(post_every)
 		self.filter = Filter()
 		self.match = Match()
 		self.profanity = Profanity()
@@ -66,14 +67,14 @@ Made with 🙀 by Leopards.
 		self.replies = Replies(quotes_file, images_file)
 		self.sleep_wake = SleepWake()
 
-		reply_every_text = ""
-		if reply_every:
-			reply_every_text = f"- I reply to the last message every {reply_every} messages posted."
+		post_every_text = ""
+		if post_every:
+			post_every_text = f"- I reply to the last message every {post_every} messages posted."
 
 		chee_text = "- I respond to messages that are just '/chee'."
 
 		self.about_text = self.about_text.format(actions = actions, period = period, 
-			reply_every_text = reply_every_text, chee_text = chee_text)
+			post_every_text = post_every_text, chee_text = chee_text)
 		#print("DEBUG: ", self.about_text) # Debugging
 
 		self.allowed_group_ids = self.getAllowedIds(group_ids)
@@ -194,7 +195,7 @@ Made with 🙀 by Leopards.
 
 
 		#
-		# See if anyone in the chat said "cheetah" or "/chee"
+		# See if anyone in the chat said "/chee"
 		#
 		if self.filter.messageIsChee(text):
 			reply = "chee"
@@ -219,12 +220,19 @@ Made with 🙀 by Leopards.
 				#
 				# See if we should reply and do so.
 				#
-				should_reply = self.counters.update(chat_id)
-				if should_reply:
-					self.sendRandomReply(context.bot, limiter, 
-						chat_id,
-						message_id = message.message_id)
+				should_post = self.counters.update(chat_id)
+				if should_post:
+					delay = 10
+					threading.Timer(delay, self.sendRandomMessageFromThread,
+						args = (context.bot, limiter, chat_id,)
+						).start()
+					logger.info(f"We hit our threshold for posting, scheduled group post in {delay} seconds...")
 				return(None)
+
+
+		#
+		# If we made it here, we're sending SOME kind of reply.
+		#
 
 		#
 		# If we already have a reply, then send it out.
@@ -285,6 +293,28 @@ Made with 🙀 by Leopards.
 			self.sendMessage(bot, limiter, chat_id, 
 				image_url = reply["url"], caption = reply["caption"],
 				message_id = message_id)
+
+
+	#
+	# Send a random message to the group.
+	#
+	def sendRandomMessage(self, bot, limiter, chat_id):
+
+		if random.randint(0, 1):
+			reply = self.replies.getRandomMessageText()
+			self.sendMessage(bot, limiter, chat_id, 
+				reply = reply)
+		else:
+			reply = self.replies.getRandomMessageImage()
+			self.sendMessage(bot, limiter, chat_id, 
+				image_url = reply["url"], caption = reply["caption"])
+
+	#
+	# Callback to send a random message from a thread, where there was a delay.
+	#
+	def sendRandomMessageFromThread(self, bot, limiter, chat_id):
+		self.sendRandomMessage(bot, limiter, chat_id)
+
 
 
 	#

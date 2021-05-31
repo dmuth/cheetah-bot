@@ -13,15 +13,16 @@ class Counters():
 	# Keeps track of how many messages that AREN'T for the bot to follow up on are
 	# sent to each group, so that we can then reply every so often.
 	#
-	chat_counters = {}
+	chat_counters = None
 
 	#
 	# How often should I reply to messages?
 	#
-	reply_every_n = None
+	post_every_n = None
 
-	def __init__(self, reply_every_n):
-		self.reply_every_n = reply_every_n
+	def __init__(self, post_every_n):
+		self.post_every_n = post_every_n
+		self.chat_counters = {}
 
 
 	#
@@ -30,7 +31,7 @@ class Counters():
 	def update(self, chat_id) -> bool:
 
 		# If we're not using this feature, bail out
-		if (not self.reply_every_n) or (self.reply_every_n < 0):
+		if (not self.post_every_n) or (self.post_every_n < 0):
 			return(False)
 
 		if not chat_id in self.chat_counters:
@@ -38,12 +39,12 @@ class Counters():
 
 		self.chat_counters[chat_id] += 1
 
-		if self.chat_counters[chat_id] >= self.reply_every_n:
-			logger.info(f"Counter for chat {chat_id} >= {self.reply_every_n}. Resetting and returning true!")
+		if self.chat_counters[chat_id] >= self.post_every_n:
+			logger.info(f"Counter for chat {chat_id} >= {self.post_every_n}. Resetting and returning true!")
 			self.chat_counters[chat_id] = 0
 			return(True)
 
-		logger.info(f"Counter for chat {chat_id}: {self.chat_counters[chat_id]} < {self.reply_every_n}. No reply this time.")
+		logger.info(f"Counter for chat {chat_id}: {self.chat_counters[chat_id]} < {self.post_every_n}. No reply this time.")
 		return(False)
 
 
