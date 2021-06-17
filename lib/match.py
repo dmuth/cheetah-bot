@@ -66,6 +66,11 @@ class Match():
 	#
 	def doesUserMatch(self, my_id, my_username, message, text):
 
+		#
+		# Prepend the at-sign for username matching.
+		#
+		my_username = "@" + my_username
+
 		reply_to = message.reply_to_message
 
 		if reply_to:
@@ -73,8 +78,8 @@ class Match():
 				logger.info("This message was a reply to me!")
 				return(True)
 		
-		if my_username in text:
-			logger.info("This message has my username in it!")
+		if my_username.lower() in text.lower():
+			logger.info(f"This message has my username ({my_username}) in it!")
 			return(True)
 
 		return(False)
