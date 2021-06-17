@@ -169,9 +169,9 @@ Made with 🙀 by Leopards.
 		#
 		# Announce ourself it added to a group
 		#
-		if self.filter.botWasAddedToGroup(update, message, self.my_id):
-			logger.info(f"I was added to the chat '{chat_name}' ({chat_id}), let's say hi!")
-			reply = self.about_text
+		#if self.filter.botWasAddedToGroup(update, message, self.my_id):
+		#	logger.info(f"I was added to the chat '{chat_name}' ({chat_id}), let's say hi!")
+		#	reply = self.about_text
 
 		#
 		# Get our rate limiter for this chat
