@@ -31,6 +31,9 @@ This script lets you run a Telegram Bot that (semi-regularly) posts pictures of 
 
 - Verify environment settings with with `docker-compose config`
 - `docker-compose up`
+- To kill, rebuild, and relaunch the container:
+   - `docker-compose kill; docker-compose rm -f; docker-compose build; docker-compose up -d; docker-compose logs -f`
+
 
 ### CLI
 
