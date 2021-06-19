@@ -29,8 +29,7 @@ echo "# ACTIONS: ${ACTIONS}"
 echo "# PERIOD: ${PERIOD}"
 echo "# POST_EVERY: ${POST_EVERY}"
 echo "# CHEE_MORE: ${CHEE_MORE}"
-echo "# QUOTES_FILE: ${QUOTES_FILE}"
-echo "# IMAGES_FILE: ${IMAGES_FILE}"
+echo "# POSTS_FILE: ${POSTS_FILE}"
 echo "# HTTP_PROXY: ${HTTP_PROXY}"
 echo "# HTTPS_PROXY: ${HTTPS_PROXY}"
 echo "# "
@@ -44,7 +43,7 @@ fi
 #set -x # Debugging
 exec ${CMD} ${TOKEN} --group_names ${GROUP_NAMES} --group_ids ${GROUP_IDS} \
 	--actions ${ACTIONS} --period ${PERIOD} --post-every ${POST_EVERY} \
-	--quotes-file ${QUOTES_FILE} --images-file ${IMAGES_FILE} ${ARGS}
+	--posts-file ${POSTS_FILE} ${ARGS}
 
 
 

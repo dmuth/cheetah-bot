@@ -43,16 +43,14 @@ parser.add_argument("--period", type = int, default = 600,
 	help = "Used for rate-limiting.  How long is our period in seconds?")
 parser.add_argument("--post-every", type = int, nargs = "?",
 	help = "Every n messages that aren't normally handled by the bot, post a cheetah sound or pic.  Disable with -1.")
-parser.add_argument("--quotes-file", type = str, required = True,
+parser.add_argument("--posts-file", type = str, required = True,
 	help = "Text file that contains things the bot says, one saying per line.")
-parser.add_argument("--images-file", type = str, required = True,
-	help = "CSV file that contains URLs of images and captions for them.")
 args = parser.parse_args()
 #print(args) # Debugging
 
 
 cheetah_bot = CheetahBot()
-cheetah_bot.start(args.token, args.quotes_file, args.images_file, 
+cheetah_bot.start(args.token, args.posts_file, 
 	args.group_ids, args.group_names, args.actions, args.period, args.post_every)
 
 

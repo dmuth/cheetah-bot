@@ -1,4 +1,4 @@
-url,captions (quotes included in output!)
+url,captions (quotes included in output!)  - Both of these fields are optionl
 https://i.imgur.com/EsFE7i4.jpg,"Pet me!"
 https://i.imgur.com/eloOjqp.png,
 https://i.imgur.com/fubK32Z.jpg,"Yesss..?"
@@ -18,3 +18,18 @@ https://i.imgur.com/hdS3MVQ.jpg,"That doesn't belong here!"
 https://i.imgur.com/xOaxMC6.jpg,
 https://i.imgur.com/6u5t9VQ.jpg,"Cheetah selfie!"
 https://i.imgur.com/38D4R1N.jpg,"Leash chees."
+,Chirp!
+,chee
+,Chee?
+,Chee!
+,Mow!
+,Let's perch on things!
+,Let's perch on things.  Other peoples' things!
+,Pet me!
+,*incessant chirping*
+,*meows for food*
+,*meowing sounds*
+,*slowwwwly pushes things off the table*
+,Let's do a flat!
+,I'm a flatcat, wouldn't you like to be a flatcat too?
+,Coffee?

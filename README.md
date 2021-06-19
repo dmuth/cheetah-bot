@@ -62,8 +62,7 @@ This script lets you run a Telegram Bot that (semi-regularly) posts pictures of 
    - So if a message is sent at second 0, the queue is now 1, at 1 second, it is 1.2, then 1.4 at 2 seconds, etc. until the queue maxes out at 2.
 - `POST_EVERY` - Posts wehn tirggered by every Nth message in the group.  100 is usually a good number.
    - Optional.  If not specified, the cheetah bot will not issue any unsolicited replies.
-- `QUOTES_FILE` - File containing quotes.  Defaults to `./quotes.txt`
-- `IMAGES_FILE` - CSV File containing image images and comments.  Defaults to `./urls.txt`.
+- `POSTS_FILE` - CSV File containing image comments and optional images to go with them.  Defaults to `./posts.txt`.
    - Default images can be found Imgur: https://imgur.com/gallery/iisbC6p
 
 

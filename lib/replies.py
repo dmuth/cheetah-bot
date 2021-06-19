@@ -9,80 +9,98 @@ logger = logging
 
 class Replies():
 
-	# Array of quotes for the bot to say
-	quotes = []
+	# Array of things for the bot to say
+	posts = []
 
-	# Array of URLs and comments
-	images = []
-
-
-	def __init__(self, quotes_file, images_file):
-		self._readQuotes(quotes_file)
-		self._readUrls(images_file)
+	# Dictionary of stats on posts 
+	stats = {}
+	stats["quotes"] = 0
+	stats["images"] = 0
+	stats["total"] = 0
 
 
-	#
-	# Return a random cheetah noise.
-	#
-	def getRandomMessageText(self):
-		return(random.choice(self.quotes))
+	def __init__(self, posts_file):
+		self._readFile(posts_file)
 
 
 	#
-	# Return a random image URL and its caption
+	# Return our stats.
 	#
-	def getRandomMessageImage(self):
+	def getStats(self):
+		return(self.stats)
+
+
+	#
+	# Return a random message
+	#
+	def getRandomMessage(self):
 
 		retval = {}
 
-		reply = random.choice(self.images)
-		retval["url"] = reply[0]
-		retval["caption"] = reply[1] + "\n\n" + reply[0]
+		reply = random.choice(self.posts)
+
+		if "url" in reply:
+			retval["url"] = reply["url"]
+
+			if "caption" in reply:
+				retval["caption"] = reply["caption"] + "\n\n" + reply["url"]
+
+		else:
+			retval["caption"] = reply["caption"]
 
 		return(retval)
 
 
 	#
-	# Read our quotes and populate our array.
+	# Read our file and populate our list with Captions and (optionally) URLs
 	#
-	def _readQuotes(self, quotes_file) -> list:
-
-		quotes = pathlib.Path.cwd() / quotes_file
-		if not quotes.exists():
-			raise Exception(f"Quotes file {quotes} does not exist!")
-		if not quotes.is_file():
-			raise Exception(f"Quotes file {quotes} exists but is not a file!")
-		quotes = quotes.read_text()
-		self.quotes = quotes.splitlines()
-
-		logger.info(f"Read {len(self.quotes)} quotes from {quotes_file}")
-
-
-	#
-	# Read our list of URLs and populate our list with both them and captions.
-	#
-	def _readUrls(self, images_file) -> list:
+	def _readFile(self, posts_file) -> list:
 
 		#
 		# Read our URLs and captions for them.
 		# 
-		images = pathlib.Path.cwd() / images_file
-		if not images.exists():
-			raise Exception(f"URLs file {images_file} does not exist!")
-		if not images.is_file():
-			raise Exception(f"URLs file {images_file} exists but is not a file!")
-		images_file_contents = images.read_text()
+		posts = pathlib.Path.cwd() / posts_file
+		if not posts.exists():
+			raise Exception(f"URLs file {posts_file} does not exist!")
+		if not posts.is_file():
+			raise Exception(f"URLs file {posts_file} exists but is not a file!")
+		posts_file_contents = posts.read_text()
 
 		#
 		# Separate the URL from the (optional) caption.
 		#
-		self.images = []
-		for line in images_file_contents.splitlines():
+		self.posts = []
+		for line in posts_file_contents.splitlines():
 			fields = line.split(",", 1)
 			if fields[0] == "url":
 				continue
-			self.images.append(fields)
 
-		logger.info(f"Read {len(self.images)} image URLs from {images_file}")
+			#
+			# Add a blank caption by default because SO much stuff will break, and it's
+			# just not worth adding if/thens all over the place.
+			#
+			# In the future, I might consider encapsulating posts/quotes in a class.
+			#
+			data = {}
+			data["caption"] = ""
+
+			if fields[0]:
+				data["url"] = fields[0]
+
+			if len(fields) > 1 and fields[1]:
+				data["caption"] = fields[1]
+			else:
+				logger.warn(f"Unable to find a caption in line: {line}!  Adding a blank one.")
+
+			if "url" in data:
+				self.stats["images"] += 1
+				self.stats["total"] += 1
+			elif "caption" in data:
+				self.stats["quotes"] += 1
+				self.stats["total"] += 1
+
+			self.posts.append(data)
+
+		logger.info(f"Read {len(self.posts)} lines from {posts_file}.  It contains {self.stats['images']} images and {self.stats['quotes']} quotes.")
 
 

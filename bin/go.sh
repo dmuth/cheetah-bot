@@ -36,8 +36,7 @@ test "${ACTIONS}" || ACTIONS=$(cat ./.env | egrep "^ACTIONS=" | cut -d= -f2- | s
 test "${PERIOD}" || PERIOD=$(cat ./.env | egrep "^PERIOD=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${POST_EVERY}" || POST_EVERY=$(cat ./.env | egrep "^POST_EVERY=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${CHEE_MORE}" || CHEE_MORE=$(cat ./.env | egrep "^CHEE_MORE=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
-test "${QUOTES_FILE}" || QUOTES_FILE=$(cat ./.env | egrep "^QUOTES_FILE=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
-test "${IMAGES_FILE}" || IMAGES_FILE=$(cat ./.env | egrep "^IMAGES_FILE=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
+test "${POSTS_FILE}" || POSTS_FILE=$(cat ./.env | egrep "^POSTS_FILE=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${HTTP_PROXY}" || HTTP_PROXY=$(cat ./.env | egrep "^HTTP_PROXY=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${HTTPS_PROXY}" || HTTPS_PROXY=$(cat ./.env | egrep "^HTTPS_PROXY=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 
@@ -53,8 +52,7 @@ docker run -it \
 	-e "PERIOD=${PERIOD}" \
 	-e "POST_EVERY=${POST_EVERY}" \
 	-e "CHEE_MORE=${CHEE_MORE}" \
-	-e "QUOTES_FILE=${QUOTES_FILE}" \
-	-e "IMAGES_FILE=${IMAGES_FILE}" \
+	-e "POSTS_FILE=${POSTS_FILE}" \
 	-e "HTTP_PROXY=${HTTP_PROXY}" \
 	-e "HTTPS_PROXY=${HTTPS_PROXY}" \
 	cheetah-bot $@

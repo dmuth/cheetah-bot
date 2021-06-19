@@ -35,6 +35,7 @@ class CheetahBot():
 	replies = None 
 	sleep_wake = None
 
+	about_text = ""
 	about_text = """I am Cheetah Bot -- a cybernetic organism: living spots and fur over a metal endoskeleton.\n
 My mission is to chirp at you.  Add me to a Telegram group for cheetah sounds and pictures.\n
 My directives are as follows:\n
@@ -43,6 +44,7 @@ My directives are as follows:\n
 - If you @ me, I respond with cheetah pictures and noises.
 - I have a quota of sending {actions} messages per {period} seconds.
 {post_every_text}
+- I can say {stats_total} different things, choosing from {stats_quotes} quotes and {stats_images} pictures.
 
 @ me with 'help' to see this message again.
 
@@ -56,7 +58,7 @@ Made with 🙀 by Leopards.
 	#
 	# Our main entry point to start bot.  This function will never exit.
 	#
-	def start(self, token, quotes_file, images_file, group_ids, group_names,
+	def start(self, token, posts_file, group_ids, group_names,
 		actions, period, post_every):
 
 		self.counters = Counters(post_every)
@@ -64,7 +66,7 @@ Made with 🙀 by Leopards.
 		self.match = Match()
 		self.profanity = Profanity()
 		self.rate_limiters = RateLimiters(actions, period)
-		self.replies = Replies(quotes_file, images_file)
+		self.replies = Replies(posts_file)
 		self.sleep_wake = SleepWake()
 
 		post_every_text = ""
@@ -73,8 +75,12 @@ Made with 🙀 by Leopards.
 
 		chee_text = "- I respond to messages that are just '/chee'."
 
+		stats = self.replies.getStats()
+
 		self.about_text = self.about_text.format(actions = actions, period = period, 
-			post_every_text = post_every_text, chee_text = chee_text)
+			post_every_text = post_every_text, chee_text = chee_text, 
+			stats_total = stats["total"], stats_quotes = stats["quotes"], stats_images = stats["images"]
+			)
 		#print("DEBUG: ", self.about_text) # Debugging
 
 		self.allowed_group_ids = self.getAllowedIds(group_ids)
@@ -284,15 +290,23 @@ Made with 🙀 by Leopards.
 	#
 	def sendRandomReply(self, bot, limiter, chat_id, message_id):
 
-		if random.randint(0, 1):
-			reply = self.replies.getRandomMessageText()
+		reply = self.replies.getRandomMessage()
+
+		if "url" in reply:
+			caption = ""
+			if "caption" in reply:
+				caption = reply["caption"]
+
 			self.sendMessage(bot, limiter, chat_id, 
-				reply = reply, message_id = message_id)
-		else:
-			reply = self.replies.getRandomMessageImage()
-			self.sendMessage(bot, limiter, chat_id, 
-				image_url = reply["url"], caption = reply["caption"],
+				image_url = reply["url"], caption = caption,
 				message_id = message_id)
+
+		elif "caption" in reply:
+			self.sendMessage(bot, limiter, chat_id, 
+				reply = reply["caption"], message_id = message_id)
+
+		else:
+			logger.warn(f"Reply '{reply}' has neither caption not URL.  Probably a blank line!  I warned you at startup!")
 
 
 	#
@@ -300,14 +314,14 @@ Made with 🙀 by Leopards.
 	#
 	def sendRandomMessage(self, bot, limiter, chat_id):
 
-		if random.randint(0, 1):
-			reply = self.replies.getRandomMessageText()
-			self.sendMessage(bot, limiter, chat_id, 
-				reply = reply)
-		else:
-			reply = self.replies.getRandomMessageImage()
+		reply = self.replies.getRandomMessage()
+
+		if "url" in reply:
 			self.sendMessage(bot, limiter, chat_id, 
 				image_url = reply["url"], caption = reply["caption"])
+		else:
+			self.sendMessage(bot, limiter, chat_id, 
+				reply = reply)
 
 	#
 	# Callback to send a random message from a thread, where there was a delay.
@@ -321,8 +335,10 @@ Made with 🙀 by Leopards.
 	# Return the current stats for the bot in the current channel.
 	#
 	def getStats(self, limiter):
+		stats = self.replies.getStats()
 		retval = (f"I can send {limiter.actions} messages every {limiter.period} seconds."
-			+ f"I have {limiter.getQuota()-1:.1f} more messages left in my quota."
+			+ f"I have {limiter.getQuota()-1:.1f} more messages left in my quota.\n\n"
+			+ f"I can say {stats['total']} different things, choosing from {stats['quotes']} quotes and {stats['images']} pictures."
 			)
 
 		return(retval)
