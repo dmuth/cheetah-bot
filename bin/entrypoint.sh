@@ -46,9 +46,7 @@ fi
 echo "# "
 echo "# Running ${CMD}..."
 echo "# "
-exec ${CMD} ${TOKEN} --group_names "${GROUP_NAMES}" --group_ids "${GROUP_IDS}" \
-	--actions ${ACTIONS} --period ${PERIOD} \
-	--quotes-file ${QUOTES_FILE} --urls-file ${URLS_FILE}
+exec ${CMD}
 
 
 

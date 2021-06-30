@@ -10,8 +10,13 @@ logger = logging
 
 class Profanity():
 
-	def __init__(self):
-		pass
+	#
+	# Are we ignoring profanity?
+	#
+	ignore = False
+
+	def __init__(self, ignore = False):
+		self.ignore = ignore
 
 
 	#
@@ -24,6 +29,9 @@ class Profanity():
 	# Update our response if there is foul language in the text 
 	#
 	def hasFoulLanguage(self, update, text) -> bool:
+
+		if self.ignore:
+			return(False)
 
 		if re.search(r"fuck", text, re.IGNORECASE):
 			self.reply = "Such language!"

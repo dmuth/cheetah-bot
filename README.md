@@ -50,6 +50,7 @@ This script lets you run a Telegram Bot that (semi-regularly) posts pictures of 
    - `./bin/run-bot.sh` - Meant to be run inside of a `bash` shell spawned by `devel.sh`, this will print the environment variables you're using before running the bot and give you a chance to change them.
    - `./bin/import-mitmproxy-cert.py` - Run this inside of a `bash shell spawned by `devel.sh` to import the mitmproxy root certificate.
 - `./bin/build.sh` - Build the container only.  This is called by `bin/devel.sh`.
+- `./bin/docker-compose-build-and-run.sh` - Build and run the container with `docker-compose`, and tail the output.
 
 
 ## Configuration
@@ -67,6 +68,7 @@ This script lets you run a Telegram Bot that (semi-regularly) posts pictures of 
    - Optional.  If not specified, the cheetah bot will not issue any unsolicited replies.
 - `POSTS_FILE` - CSV File containing image comments and optional images to go with them.  Defaults to `./posts.txt`.
    - Default images can be found Imgur: https://imgur.com/gallery/iisbC6p
+- `PROFANITY_REPLY` - Set to 1 for the bot to reply to profanity it sees in channels.  This can be annoying, so it's off by default.
 
 
 ## Good Testing Practices
@@ -77,6 +79,7 @@ I'm not even sure how to unit test against Telegram, so I have manual instructio
    - `POST_EVERY`, which should be 2.
    - `ACTIONS` should be 2.
    - `PERIOD` should be 10.
+   - e.g. `POST_EVERY=2 ACTIONS=2 PERIOD=10 /mnt/bin/run-bot.sh`
 - Send 2 test messages to the group, ensure the bot replies to the second message.
 - Type `chee` and ensure the bot replies.
 - Type an f-bomb in a message and make sure the bot catches that.
@@ -89,8 +92,12 @@ I'm not even sure how to unit test against Telegram, so I have manual instructio
 
 ### Unit Testing
 
-- `pytest` - Specify `-s` to print contents of stdout. Specify `--log-cli-level=info` to print logging messages.
-   - Note that `--log-cli-level=info` may break some tests, and there are calls to get quota values in logging messages.  I warned ya!
+- `bin/pytest` - Run unit tests.  This script is just a wrapper to add `lib/` into `$PYTHONPATH`.
+   - `-s` - Specify `-s` to print contents of stdout. 
+   - `-k string` - Run only tests that match that substring
+   - `--log-cli-level=info` - Specify to print logging messages.
+      - Note that `--log-cli-level=info` may break some tests, and there are calls to get quota values in logging messages.  I warned ya!
+   - `file` Specify a unit test file to run
 
 There is a great blog post about mocking <a href="https://yeraydiazdiaz.medium.com/what-the-mock-cheatsheet-mocking-in-python-6a71db997832">over here</a>.
 

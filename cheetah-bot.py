@@ -45,13 +45,22 @@ parser.add_argument("--post-every", type = int, nargs = "?",
 	help = "Every n messages that aren't normally handled by the bot, post a cheetah sound or pic.  Disable with -1.")
 parser.add_argument("--posts-file", type = str, required = True,
 	help = "Text file that contains things the bot says, one saying per line.")
+parser.add_argument("--profanity-reply", action = 'store_true',
+	help = "Set if you want the bot to respond to profanity.  Off by default.")
 args = parser.parse_args()
 #print(args) # Debugging
 
 
+profanity_reply = False
+if args.profanity_reply:
+	profanity_reply = True
+
+
 cheetah_bot = CheetahBot()
 cheetah_bot.start(args.token, args.posts_file, 
-	args.group_ids, args.group_names, args.actions, args.period, args.post_every)
+	args.group_ids, args.group_names, args.actions, args.period, args.post_every, 
+	profanity_reply
+	)
 
 
 
