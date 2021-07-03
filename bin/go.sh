@@ -37,6 +37,7 @@ test "${PERIOD}" || PERIOD=$(cat ./.env | egrep "^PERIOD=" | cut -d= -f2- | sed 
 test "${POST_EVERY}" || POST_EVERY=$(cat ./.env | egrep "^POST_EVERY=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${CHEE_MORE}" || CHEE_MORE=$(cat ./.env | egrep "^CHEE_MORE=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${POSTS_FILE}" || POSTS_FILE=$(cat ./.env | egrep "^POSTS_FILE=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
+test "${PROFANITY_REPLY}" || PROFANITY_REPLY=$(cat ./.env | egrep "^PROFANITY_REPLY=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${HTTP_PROXY}" || HTTP_PROXY=$(cat ./.env | egrep "^HTTP_PROXY=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 test "${HTTPS_PROXY}" || HTTPS_PROXY=$(cat ./.env | egrep "^HTTPS_PROXY=" | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')
 
@@ -53,6 +54,7 @@ docker run -it \
 	-e "POST_EVERY=${POST_EVERY}" \
 	-e "CHEE_MORE=${CHEE_MORE}" \
 	-e "POSTS_FILE=${POSTS_FILE}" \
+	-e "PROFANITY_REPLY=${PROFANITY_REPLY}" \
 	-e "HTTP_PROXY=${HTTP_PROXY}" \
 	-e "HTTPS_PROXY=${HTTPS_PROXY}" \
 	cheetah-bot $@

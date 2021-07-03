@@ -12,6 +12,11 @@ set -e
 pushd $(dirname $0) > /dev/null
 cd ..
 
+#
+# Add our lib to the path
+#
+export PYTHONPATH=$PYTHONPATH:$(pwd)/lib
+
 CMD="./cheetah-bot.py"
 
 echo "# "
@@ -30,20 +35,25 @@ echo "# PERIOD: ${PERIOD}"
 echo "# POST_EVERY: ${POST_EVERY}"
 echo "# CHEE_MORE: ${CHEE_MORE}"
 echo "# POSTS_FILE: ${POSTS_FILE}"
+echo "# PROFANITY_REPLY: ${PROFANITY_REPLY}"
 echo "# HTTP_PROXY: ${HTTP_PROXY}"
 echo "# HTTPS_PROXY: ${HTTPS_PROXY}"
 echo "# "
 
 ARGS=""
-if test "${CHEE_MORE}"
+if test "${PROFANITY_REPLY}" 
 then
-	ARGS="${ARGS} --chee-more"
+	if test "${PROFANITY_REPLY}" != "0"
+	then
+		echo "TEST TRUE2 ${PROFANITY_REPLY}"
+		ARGS="${ARGS} --profanity-reply"
+	fi
 fi
 
 #set -x # Debugging
 exec ${CMD} ${TOKEN} --group_names ${GROUP_NAMES} --group_ids ${GROUP_IDS} \
 	--actions ${ACTIONS} --period ${PERIOD} --post-every ${POST_EVERY} \
-	--posts-file ${POSTS_FILE} ${ARGS}
+	--posts-file ${POSTS_FILE} ${ARGS} 
 
 
 

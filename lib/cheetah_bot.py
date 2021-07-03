@@ -59,12 +59,12 @@ Made with 🙀 by Leopards.
 	# Our main entry point to start bot.  This function will never exit.
 	#
 	def start(self, token, posts_file, group_ids, group_names,
-		actions, period, post_every):
+		actions, period, post_every, profanity_reply = False):
 
 		self.counters = Counters(post_every)
 		self.filter = Filter()
 		self.match = Match()
-		self.profanity = Profanity()
+		self.profanity = Profanity(ignore = not profanity_reply)
 		self.rate_limiters = RateLimiters(actions, period)
 		self.replies = Replies(posts_file)
 		self.sleep_wake = SleepWake()
@@ -120,6 +120,20 @@ Made with 🙀 by Leopards.
 	#
 	def echo(self, update, context):
 
+		results = self.echoParseMessage(update, context)
+
+		if not results:
+			return(None)
+
+		(message, text, chat_id) = results[0], results[1], results[2]
+		self.echoComposeReply(context, update, message, text, chat_id)
+
+
+	#
+	# Parse our message and figure out if we should reply.
+	#
+	def echoParseMessage(self, update, context):
+
 		# Set some defaults
 		reply = ""
 
@@ -161,17 +175,20 @@ Made with 🙀 by Leopards.
 			chat_id, chat_name):
 			return(None)
 
-		###
-		#
-		# Start of section where we compose replies.
-		# (In the future, I'll factor this out.)
-		#
-		###
+		return([message, text, chat_id])
+
+
+	#
+	# Compose our reply
+	#
+	def echoComposeReply(self, context, update, message, text, chat_id):
+
+		reply = ""
 
 		message_to_me = False
 		if self.match.doesUserMatch(self.my_id, self.my_username, update.message, text):
 			message_to_me = True
-	
+
 		#
 		# Announce ourself it added to a group
 		#
@@ -229,10 +246,11 @@ Made with 🙀 by Leopards.
 				should_post = self.counters.update(chat_id)
 				if should_post:
 					delay = 10
+					#delay = 1 # Debugging
 					threading.Timer(delay, self.sendRandomMessageFromThread,
 						args = (context.bot, limiter, chat_id,)
 						).start()
-					logger.info(f"We hit our threshold for posting, scheduled group post in {delay} seconds...")
+					logger.info(f"We hit our num message threshold for posting, scheduled group post in {delay} seconds...")
 				return(None)
 
 
@@ -321,7 +339,8 @@ Made with 🙀 by Leopards.
 				image_url = reply["url"], caption = reply["caption"])
 		else:
 			self.sendMessage(bot, limiter, chat_id, 
-				reply = reply)
+				reply = reply["caption"])
+
 
 	#
 	# Callback to send a random message from a thread, where there was a delay.
