@@ -2,7 +2,6 @@ url,captions (quotes included in output!)  - Both of these fields are optionl
 https://i.imgur.com/EsFE7i4.jpg,"Pet me!"
 https://i.imgur.com/eloOjqp.png,
 https://i.imgur.com/fubK32Z.jpg,"Yesss..?"
-https://i.imgur.com/q7giUE0.jpg,"I can HEAR these colors, man!"
 https://i.imgur.com/tIz5Em4.jpg,
 https://i.imgur.com/e1eDYO0.jpg,"Mom.  Mom mom mom mom mother mom mom mom MOMMY!"
 https://i.imgur.com/S5zigBc.jpg,"Fancy chee."
