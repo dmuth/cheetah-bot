@@ -168,14 +168,16 @@ def test_sendMessage(bot, update, context, limiter):
 
 def test_sendMessage_send_message(bot, context, limiter):
 
-	#limiter.getQuota = MagicMock(return_value = 73)
+	limiter.getQuota = MagicMock(return_value = 73)
 	bot.sleep_wake.isAsleep = MagicMock(return_value = False)
 	bot.sendMessage(context.bot, limiter, pytest.chat_id, reply = "whatever")
 	context.bot.send_message.assert_called()
 	context.bot.send_photo.assert_not_called()
 
 
-def test_sendMessage_send_message(bot, context, limiter):
+
+
+def test_sendMessage_send_message_image(bot, context, limiter):
 
 	limiter.getQuota = MagicMock(return_value = 73)
 	bot.sleep_wake.isAsleep = MagicMock(return_value = False)
