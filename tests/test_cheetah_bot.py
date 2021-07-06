@@ -4,6 +4,8 @@ import pytest
 from unittest.mock import MagicMock
 
 from lib.cheetah_bot import CheetahBot
+import telegram
+from telegram.error import TelegramError
 
 
 @pytest.fixture
@@ -85,6 +87,26 @@ def test_echo_main(bot, update, context):
 
 	context.bot.send_message.assert_called()
 	context.bot.send_photo.assert_not_called()
+
+	#
+	# Make sure that echo() catches the "have no rights" error.
+	#
+	context.bot.send_message = MagicMock(side_effect=telegram.error.BadRequest("Have no rights to send a message"))
+	bot.echo(update, context)
+
+	#
+	# Any other string in an exception will be thrown.
+	#
+	context.bot.send_message = MagicMock(side_effect=telegram.error.BadRequest("test"))
+
+	pytest.e = None
+	try:
+		bot.echo(update, context)
+	except Exception as e:
+		pytest.e = str(e)
+	assert "test" in pytest.e
+
+
 
 
 def test_echoParseMessage_message_too_old(bot, update, context):
@@ -173,8 +195,6 @@ def test_sendMessage_send_message(bot, context, limiter):
 	bot.sendMessage(context.bot, limiter, pytest.chat_id, reply = "whatever")
 	context.bot.send_message.assert_called()
 	context.bot.send_photo.assert_not_called()
-
-
 
 
 def test_sendMessage_send_message_image(bot, context, limiter):

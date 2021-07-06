@@ -126,7 +126,14 @@ Made with 🙀 by Leopards.
 			return(None)
 
 		(message, text, chat_id) = results[0], results[1], results[2]
-		self.echoComposeReply(context, update, message, text, chat_id)
+
+		try: 
+			self.echoComposeReply(context, update, message, text, chat_id)
+		except telegram.error.BadRequest as e:
+			if "Have no rights to send a message" in str(e):
+				logger.warning(f"echo(): Unable to send message to chat_id={chat_id}: {str(e)}")
+			else:
+				raise(e)
 
 
 	#
